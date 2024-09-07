@@ -1,0 +1,115 @@
+.author-submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4rem;
+}
+.author-inputs input {
+  width: 14rem;
+  height: 2rem;
+  border-radius: 0.2rem;
+  align-items: center;
+  text-align: center;
+}
+
+.author-inputs {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.096);
+  padding: 1rem;
+  gap: 1rem;
+  border-radius: 0.3rem;
+}
+
+.author-submit-btn {
+  background-color: rgb(0, 0, 0);
+  color: white;
+  padding: 0.4rem;
+  margin-top: 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: all 0.5s;
+}
+
+.author-submit-btn:hover {
+  background-color: white;
+  color: black;
+}
+
+.author-error-msg {
+  margin-top: 1rem;
+  color: red;
+  border: 1px solid black;
+  padding: 0.3rem;
+  font-size: 0.4rem;
+  border-radius: 0.4rem;
+}
+
+.author-list {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: row;
+  font-size: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.author-list-lable {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.096);
+  width: fit-content;
+  padding: 1rem;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+.delete-auhtor-btn {
+  background-color: rgb(0, 0, 0);
+  color: white;
+  padding: 0.4rem;
+  margin-top: 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: all 0.5s;
+}
+.delete-auhtor-btn:hover {
+  background-color: rgb(122, 48, 48);
+  color: rgb(255, 255, 255);
+}
+
+.update-author-btn {
+  background-color: rgb(250, 250, 250);
+  color: rgb(0, 0, 0);
+  padding: 0.4rem;
+  margin-top: 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: all 0.5s;
+}
+.update-author-btn:hover {
+  background-color: rgb(22, 29, 131);
+  color: rgb(255, 255, 255);
+}
+
+.show-authors-btn {
+  background-color: rgb(92, 92, 92);
+  color: rgb(255, 255, 255);
+  padding: 0.4rem;
+  margin-top: 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: all 0.5s;
+  margin-bottom: 1rem;
+}
+.show-authors-btn:hover {
+  background-color: rgb(255, 255, 255);
+  color: rgb(0, 0, 0);
+}
+.auth-stats-for-submit {
+  color: rgb(2, 2, 2);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.3rem;
+  border-radius: 0.2rem;
+}
