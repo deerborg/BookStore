@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  springboot-app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      DBURL: postgres:5432
+      DBNAME: library-app
+      DBUSERNAME: postgres
+      DBPASSWORD: postgres
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: library-app

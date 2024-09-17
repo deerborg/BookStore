@@ -1,71 +1,72 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import authorBaseUrl from "../../authorApi";
-const Auhtor = () => {
+import publisherBaseUrl from "../../publisherApi";
+const Publisher = () => {
   // State başı
-  const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
-  const [errorMsg, setErrorMsg] = useState([]); // Mesajların listeye dahili
-  const [errorFlag, setErrorFlag] = useState(false); // Hata durumu kontrolü
-  const [author, setAuthor] = useState({
+  const [error, setError] = useState([]);
+  const [errorMsg, setErrorMsg] = useState([]);
+  const [errorFlag, setErrorFlag] = useState(false);
+  const [publisher, setPublisher] = useState({
     name: "",
-    birthDate: "",
-    country: "",
-  }); // Kayıt için field
-  const [updateAuthor, setUpdateAuthor] = useState({
+    establishmentYear: "",
+    address: "",
+  });
+  const [updatePublisher, setUpdatePublisher] = useState({
     id: "",
     name: "",
-    birthDate: "",
-    country: "",
-  }); // Güncelleme için filed
-  const [authors, setAuthors] = useState([]); // YAzar listesi
-  const [authorListChange, setAuthorListChange] = useState(false); // Yazar listesi güncellenme kontrolü
-  const [showAuthors, setShowAuthors] = useState(false); // Yazar listesi gizle göster
-  const [shotAuthorsBtnName, setShowAuthorsBtnName] =
-    useState("Show All Authors"); // Yazar listesi duruma göre isim değişimi
-  const [checkStats, setCheckStats] = useState(""); // Başarılı işlemler için
-  const [createButtonVisible, setCreateButtonVisible] = useState(true); // Güncelleme işlemlerinde Yeni yazar oluştur butonunu gizler
-  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false); // Güncelleme işlemleri için İptal ve Kaydet butonlarını aktif eder
+    establishmentYear: "",
+    address: "",
+  });
+  const [publishers, setPublishers] = useState([]);
+  const [publisherListChange, setPublisherListChange] = useState(false);
+  const [showPublishers, setShowPublishers] = useState(false);
+  const [showPublishersBtnName, setShowPublishersBtnName] =
+    useState("Show All Publisher");
+  const [checkStats, setCheckStats] = useState("");
+  const [createButtonVisible, setCreateButtonVisible] = useState(true);
+  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
   // State sonu
 
   // Kayıt için standart şablon
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setAuthor({
-      ...author,
+    setPublisher({
+      ...publisher,
       [name]: value,
     });
     // Update içinde gerekli standart şablon
-    setUpdateAuthor({
-      ...updateAuthor,
+    setUpdatePublisher({
+      ...updatePublisher,
       [name]: value,
     });
   };
 
-  const handleUpdateAuthor = (id, name, birthDate, country) => {
+  const handleUpdatePublisher = (id, name, establishmentYear, address) => {
     setCreateButtonVisible(false);
     setUpdateButtonsVisible(true);
-    const updatedAuthor = {
+    const updatePublisher = {
       name: name,
-      birthDate: birthDate,
-      country: country,
+      establishmentYear: establishmentYear,
+      address: address,
     };
 
-    setAuthor(updatedAuthor); // Formu doldurmak için
-    setUpdateAuthor({
+    setPublisher(updatePublisher); // Formu doldurmak için
+    setUpdatePublisher({
       id: id,
-      ...updatedAuthor, // Update işlemi için
+      ...updatePublisher, // Update işlemi için
     });
   };
 
   const handleUpdateSaveClick = () => {
     // Boş  veya tanımlanmamış fieldlar için
     if (
-      author.name === "" ||
-      author.name === undefined ||
-      author.birthDate === "" ||
-      author.birthDate === undefined ||
-      author.country === "" ||
-      author.country === undefined
+      publisher.name === "" ||
+      publisher.name === undefined ||
+      publisher.establishmentYear === "" ||
+      publisher.establishmentYear === undefined ||
+      publisher.address === "" ||
+      publisher.address === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
@@ -78,14 +79,17 @@ const Auhtor = () => {
       clearMsg();
     } else {
       axios
-        .put(authorBaseUrl.baseUrl + "/" + updateAuthor.id, updateAuthor)
+        .put(
+          publisherBaseUrl.baseUrl + "/" + updatePublisher.id,
+          updatePublisher
+        )
         .then((res) => {
           setErrorFlag(false);
-          setAuthorListChange(true);
-          setAuthor({
+          setPublisherListChange(true);
+          setPublisher({
             name: "",
-            birthDate: "",
-            country: "",
+            establishmentYear: "",
+            address: "",
           });
           setCheckStats("Updated");
           function clearStats() {
@@ -105,20 +109,19 @@ const Auhtor = () => {
             setError(["Bad Request"]);
           }
         })
-        .finally(setAuthorListChange(false));
+        .finally(setPublisherListChange(false));
     }
   };
 
-  // Yazar kaydı isteği
-  const handleSaveAuthor = () => {
+  const handleSavePublisher = () => {
     // Boş  veya tanımlanmamış fieldlar için
     if (
-      author.name === "" ||
-      author.name === undefined ||
-      author.birthDate === "" ||
-      author.birthDate === undefined ||
-      author.country === "" ||
-      author.country === undefined
+      publisher.name === "" ||
+      publisher.name === undefined ||
+      publisher.establishmentYear === "" ||
+      publisher.establishmentYear === undefined ||
+      publisher.address === "" ||
+      publisher.address === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
@@ -131,14 +134,14 @@ const Auhtor = () => {
       clearMsg();
     } else {
       axios
-        .post(authorBaseUrl.baseUrl, author)
+        .post(publisherBaseUrl.baseUrl, publisher)
         .then((res) => {
           setErrorFlag(false);
-          setAuthorListChange(true);
-          setAuthor({
+          setPublisherListChange(true);
+          setPublisher({
             name: "",
-            birthDate: "",
-            country: "",
+            establishmentYear: "",
+            address: "",
           });
           setCheckStats("Created");
           function clearStats() {
@@ -156,9 +159,10 @@ const Auhtor = () => {
           } else {
             const err = ["Bad Request. Contact a developer."];
             setError(err);
+            console.log(e);
           }
         })
-        .finally(setAuthorListChange(false));
+        .finally(setPublisherListChange(false));
     }
   };
 
@@ -172,28 +176,27 @@ const Auhtor = () => {
 
   // Aktif listenin kayıt ve silme isteklerinden sonra yenilenmesi için
   useEffect(() => {
-    axios.get(authorBaseUrl.baseUrl).then((res) => {
-      setAuthors(res.data);
+    axios.get(publisherBaseUrl.baseUrl).then((res) => {
+      setPublishers(res.data);
     });
-  }, [authorListChange]);
+  }, [publisherListChange]);
 
-  // Yazarları listeleme butonu için
-  const handeShowAuthors = () => {
-    if (showAuthors) {
-      setShowAuthorsBtnName("Show All Authors");
-      return setShowAuthors(false);
+  const handleShowPublisher = () => {
+    if (showPublishers) {
+      setShowPublishersBtnName("Show All Publisher");
+      return setShowPublishers(false);
     }
-    setShowAuthorsBtnName("Hidden List");
-    return setShowAuthors(true);
+    setShowPublishersBtnName("Hidden List");
+    return setShowPublishers(true);
   };
 
   // Yazar silme isteği
-  const handleDeleteAuthor = (id) => {
+  const handleDeletePublisher = (id) => {
     console.log(id);
     axios
-      .delete(authorBaseUrl.baseUrl + "/" + id)
+      .delete(publisherBaseUrl.baseUrl + "/" + id)
       .then((res) => {
-        setAuthorListChange(true);
+        setPublisherListChange(true);
         setCheckStats("Deleted");
         function clearStats() {
           setTimeout(() => {
@@ -205,14 +208,14 @@ const Auhtor = () => {
       .catch((e) => {
         console.log(e);
       })
-      .finally(setAuthorListChange(false));
+      .finally(setPublisherListChange(false));
   };
 
   const handleCancelClick = () => {
-    setAuthor({
+    setPublisher({
       name: "",
-      birthDate: "",
-      country: "",
+      establishmentYear: "",
+      address: "",
     });
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
@@ -220,52 +223,54 @@ const Auhtor = () => {
 
   return (
     <>
-      <div className="author-submit">
-        <h3 className="auth-stats-for-submit">{checkStats}</h3>
-        <div className="author-inputs">
+      <div className="form-submit">
+        <h3 className="form-stats-for-submit">{checkStats}</h3>
+        <div className="form-inputs">
           <input
             name="name"
-            placeholder="Author Name"
+            placeholder="Publisher Name"
             required
             type="text"
-            value={author.name}
+            value={publisher.name}
             onChange={handleChange}
           />
 
           <input
-            name="birthDate"
-            placeholder="Author Birth Date"
+            name="establishmentYear"
+            placeholder="Establishment Year"
             required
-            type="date"
-            value={author.birthDate}
+            type="number"
+            min={1900}
+            max={2024}
+            value={publisher.establishmentYear}
             onChange={handleChange}
           />
 
           <input
-            name="country"
-            placeholder="Author Country"
+            name="address"
+            placeholder="Publisher Address"
             required
             type="text"
-            value={author.country}
+            value={publisher.address}
             onChange={handleChange}
           />
         </div>
         {createButtonVisible && (
-          <button className="author-submit-btn" onClick={handleSaveAuthor}>
-            Create Author
+          <button className="form-submit-btn" onClick={handleSavePublisher}>
+            Create Publisher
           </button>
         )}
 
         {updateButtonsVisible && (
           <>
-            <div className="author-update-btns">
+            <div className="form-update-btns">
               <button
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
                 Save
               </button>
-              <button onClick={handleCancelClick} className="author-submit-btn">
+              <button onClick={handleCancelClick} className="form-submit-btn">
                 Cancel
               </button>
             </div>
@@ -273,7 +278,7 @@ const Auhtor = () => {
         )}
 
         {errorFlag && (
-          <div className="author-error-msg">
+          <div className="form-error-msg">
             {errorFlag &&
               errorMsg.map((e) => {
                 return (
@@ -284,40 +289,39 @@ const Auhtor = () => {
               })}
           </div>
         )}
-        <button onClick={handeShowAuthors} className="show-authors-btn">
-          {shotAuthorsBtnName}
+        <button onClick={handleShowPublisher} className="show-form-btn">
+          {showPublishersBtnName}
         </button>
       </div>
-      {showAuthors && (
-        <div className="author-list">
-          {authors.map((auhtor) => {
+      {showPublishers && (
+        <div className="form-list">
+          {publishers.map((publisher) => {
             return (
               <>
-                <div className="author-list-lable">
-                  <h3>Author Name: {auhtor.name}</h3>
-                  <h3>Author Birthday: {auhtor.birthDate}</h3>
-                  <h3>Author Country: {auhtor.country}</h3>
-                  {/* {auhtor.books.map((b) => {
-                    return <h3>Books: {b}</h3>;
-                  })} */}
+                <div className="form-list-lable">
+                  <h3>Publisher Name: {publisher.name}</h3>
+                  <h3>
+                    Publisher Establishment Year: {publisher.establishmentYear}
+                  </h3>
+                  <h3>Publisher Address: {publisher.address}</h3>
                   <button
                     onClick={(e) => {
-                      handleDeleteAuthor(auhtor.id);
+                      handleDeletePublisher(publisher.id);
                     }}
-                    className="delete-auhtor-btn"
+                    className="delete-form-btn"
                   >
                     Delete
                   </button>
                   <button
                     onClick={(e) => {
-                      handleUpdateAuthor(
-                        auhtor.id,
-                        auhtor.name,
-                        auhtor.birthDate,
-                        auhtor.country
+                      handleUpdatePublisher(
+                        publisher.id,
+                        publisher.name,
+                        publisher.establishmentYear,
+                        publisher.address
                       );
                     }}
-                    className="update-author-btn"
+                    className="update-form-btn"
                   >
                     Update
                   </button>
@@ -330,4 +334,4 @@ const Auhtor = () => {
     </>
   );
 };
-export default Auhtor;
+export default Publisher;

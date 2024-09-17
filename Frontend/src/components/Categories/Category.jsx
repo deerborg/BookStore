@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import authorBaseUrl from "../../authorApi";
-const Auhtor = () => {
+import categoryBaseUrl from "../../categoryApi";
+const Category = () => {
   // State başı
   const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
   const [errorMsg, setErrorMsg] = useState([]); // Mesajların listeye dahili
   const [errorFlag, setErrorFlag] = useState(false); // Hata durumu kontrolü
-  const [author, setAuthor] = useState({
+  const [category, setCategory] = useState({
     name: "",
-    birthDate: "",
-    country: "",
+    description: "",
   }); // Kayıt için field
-  const [updateAuthor, setUpdateAuthor] = useState({
+  const [updateCategory, setUpdateCategory] = useState({
     id: "",
     name: "",
-    birthDate: "",
-    country: "",
+    description: "",
   }); // Güncelleme için filed
-  const [authors, setAuthors] = useState([]); // YAzar listesi
-  const [authorListChange, setAuthorListChange] = useState(false); // Yazar listesi güncellenme kontrolü
-  const [showAuthors, setShowAuthors] = useState(false); // Yazar listesi gizle göster
-  const [shotAuthorsBtnName, setShowAuthorsBtnName] =
-    useState("Show All Authors"); // Yazar listesi duruma göre isim değişimi
+  const [categories, setCategories] = useState([]); // YAzar listesi
+  const [categoryListChange, setCategoryListChange] = useState(false); // Yazar listesi güncellenme kontrolü
+  const [showCategories, setShowCategories] = useState(false); // Yazar listesi gizle göster
+  const [showCategoryBtnName, setShowCategoryBtnName] =
+    useState("Show All Category"); // Yazar listesi duruma göre isim değişimi
   const [checkStats, setCheckStats] = useState(""); // Başarılı işlemler için
   const [createButtonVisible, setCreateButtonVisible] = useState(true); // Güncelleme işlemlerinde Yeni yazar oluştur butonunu gizler
   const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false); // Güncelleme işlemleri için İptal ve Kaydet butonlarını aktif eder
@@ -30,42 +28,39 @@ const Auhtor = () => {
   // Kayıt için standart şablon
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setAuthor({
-      ...author,
+    setCategory({
+      ...category,
       [name]: value,
     });
     // Update içinde gerekli standart şablon
-    setUpdateAuthor({
-      ...updateAuthor,
+    setUpdateCategory({
+      ...updateCategory,
       [name]: value,
     });
   };
 
-  const handleUpdateAuthor = (id, name, birthDate, country) => {
+  const handleUpdateCategory = (id, name, description) => {
     setCreateButtonVisible(false);
     setUpdateButtonsVisible(true);
-    const updatedAuthor = {
+    const updateCategory = {
       name: name,
-      birthDate: birthDate,
-      country: country,
+      description: description,
     };
 
-    setAuthor(updatedAuthor); // Formu doldurmak için
-    setUpdateAuthor({
+    setCategory(updateCategory); // Formu doldurmak için
+    setUpdateCategory({
       id: id,
-      ...updatedAuthor, // Update işlemi için
+      ...updateCategory, // Update işlemi için
     });
   };
 
   const handleUpdateSaveClick = () => {
     // Boş  veya tanımlanmamış fieldlar için
     if (
-      author.name === "" ||
-      author.name === undefined ||
-      author.birthDate === "" ||
-      author.birthDate === undefined ||
-      author.country === "" ||
-      author.country === undefined
+      category.name === "" ||
+      category.name === undefined ||
+      category.description === "" ||
+      category.description === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
@@ -78,14 +73,13 @@ const Auhtor = () => {
       clearMsg();
     } else {
       axios
-        .put(authorBaseUrl.baseUrl + "/" + updateAuthor.id, updateAuthor)
+        .put(categoryBaseUrl.baseUrl + "/" + updateCategory.id, updateCategory)
         .then((res) => {
           setErrorFlag(false);
-          setAuthorListChange(true);
-          setAuthor({
+          setCategoryListChange(true);
+          setCategory({
             name: "",
-            birthDate: "",
-            country: "",
+            description: "",
           });
           setCheckStats("Updated");
           function clearStats() {
@@ -105,20 +99,18 @@ const Auhtor = () => {
             setError(["Bad Request"]);
           }
         })
-        .finally(setAuthorListChange(false));
+        .finally(setCategoryListChange(false));
     }
   };
 
   // Yazar kaydı isteği
-  const handleSaveAuthor = () => {
+  const handleSaveCategory = () => {
     // Boş  veya tanımlanmamış fieldlar için
     if (
-      author.name === "" ||
-      author.name === undefined ||
-      author.birthDate === "" ||
-      author.birthDate === undefined ||
-      author.country === "" ||
-      author.country === undefined
+      category.name === "" ||
+      category.name === undefined ||
+      category.description === "" ||
+      category.description === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
@@ -131,14 +123,13 @@ const Auhtor = () => {
       clearMsg();
     } else {
       axios
-        .post(authorBaseUrl.baseUrl, author)
+        .post(categoryBaseUrl.baseUrl, category)
         .then((res) => {
           setErrorFlag(false);
-          setAuthorListChange(true);
-          setAuthor({
+          setCategoryListChange(true);
+          setCategory({
             name: "",
-            birthDate: "",
-            country: "",
+            description: "",
           });
           setCheckStats("Created");
           function clearStats() {
@@ -156,9 +147,10 @@ const Auhtor = () => {
           } else {
             const err = ["Bad Request. Contact a developer."];
             setError(err);
+            console.log(e);
           }
         })
-        .finally(setAuthorListChange(false));
+        .finally(setCategoryListChange(false));
     }
   };
 
@@ -172,28 +164,28 @@ const Auhtor = () => {
 
   // Aktif listenin kayıt ve silme isteklerinden sonra yenilenmesi için
   useEffect(() => {
-    axios.get(authorBaseUrl.baseUrl).then((res) => {
-      setAuthors(res.data);
+    axios.get(categoryBaseUrl.baseUrl).then((res) => {
+      setCategories(res.data);
     });
-  }, [authorListChange]);
+  }, [categoryListChange]);
 
   // Yazarları listeleme butonu için
-  const handeShowAuthors = () => {
-    if (showAuthors) {
-      setShowAuthorsBtnName("Show All Authors");
-      return setShowAuthors(false);
+  const handleShowCategory = () => {
+    if (showCategories) {
+      setShowCategoryBtnName("Show All Category");
+      return setShowCategories(false);
     }
-    setShowAuthorsBtnName("Hidden List");
-    return setShowAuthors(true);
+    setShowCategoryBtnName("Hidden List");
+    return setShowCategories(true);
   };
 
   // Yazar silme isteği
-  const handleDeleteAuthor = (id) => {
+  const handleDeleteCategory = (id) => {
     console.log(id);
     axios
-      .delete(authorBaseUrl.baseUrl + "/" + id)
+      .delete(categoryBaseUrl.baseUrl + "/" + id)
       .then((res) => {
-        setAuthorListChange(true);
+        setCategoryListChange(true);
         setCheckStats("Deleted");
         function clearStats() {
           setTimeout(() => {
@@ -205,14 +197,13 @@ const Auhtor = () => {
       .catch((e) => {
         console.log(e);
       })
-      .finally(setAuthorListChange(false));
+      .finally(setCategoryListChange(false));
   };
 
   const handleCancelClick = () => {
-    setAuthor({
+    setCategory({
       name: "",
-      birthDate: "",
-      country: "",
+      description: "",
     });
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
@@ -220,52 +211,43 @@ const Auhtor = () => {
 
   return (
     <>
-      <div className="author-submit">
-        <h3 className="auth-stats-for-submit">{checkStats}</h3>
-        <div className="author-inputs">
+      <div className="form-submit">
+        <h3 className="form-stats-for-submit">{checkStats}</h3>
+        <div className="form-inputs">
           <input
             name="name"
-            placeholder="Author Name"
+            placeholder="Category Name"
             required
             type="text"
-            value={author.name}
+            value={category.name}
             onChange={handleChange}
           />
 
           <input
-            name="birthDate"
-            placeholder="Author Birth Date"
-            required
-            type="date"
-            value={author.birthDate}
-            onChange={handleChange}
-          />
-
-          <input
-            name="country"
-            placeholder="Author Country"
+            name="description"
+            placeholder="Category Description"
             required
             type="text"
-            value={author.country}
+            value={category.description}
             onChange={handleChange}
           />
         </div>
         {createButtonVisible && (
-          <button className="author-submit-btn" onClick={handleSaveAuthor}>
-            Create Author
+          <button className="form-submit-btn" onClick={handleSaveCategory}>
+            Create Category
           </button>
         )}
 
         {updateButtonsVisible && (
           <>
-            <div className="author-update-btns">
+            <div className="form-update-btns">
               <button
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
                 Save
               </button>
-              <button onClick={handleCancelClick} className="author-submit-btn">
+              <button onClick={handleCancelClick} className="form-submit-btn">
                 Cancel
               </button>
             </div>
@@ -273,7 +255,7 @@ const Auhtor = () => {
         )}
 
         {errorFlag && (
-          <div className="author-error-msg">
+          <div className="form-error-msg">
             {errorFlag &&
               errorMsg.map((e) => {
                 return (
@@ -284,40 +266,35 @@ const Auhtor = () => {
               })}
           </div>
         )}
-        <button onClick={handeShowAuthors} className="show-authors-btn">
-          {shotAuthorsBtnName}
+        <button onClick={handleShowCategory} className="show-form-btn">
+          {showCategoryBtnName}
         </button>
       </div>
-      {showAuthors && (
-        <div className="author-list">
-          {authors.map((auhtor) => {
+      {showCategories && (
+        <div className="form-list">
+          {categories.map((category) => {
             return (
               <>
-                <div className="author-list-lable">
-                  <h3>Author Name: {auhtor.name}</h3>
-                  <h3>Author Birthday: {auhtor.birthDate}</h3>
-                  <h3>Author Country: {auhtor.country}</h3>
-                  {/* {auhtor.books.map((b) => {
-                    return <h3>Books: {b}</h3>;
-                  })} */}
+                <div className="form-list-lable">
+                  <h3>Category Name: {category.name}</h3>
+                  <h3>Category Description: {category.description}</h3>
                   <button
                     onClick={(e) => {
-                      handleDeleteAuthor(auhtor.id);
+                      handleDeleteCategory(category.id);
                     }}
-                    className="delete-auhtor-btn"
+                    className="delete-form-btn"
                   >
                     Delete
                   </button>
                   <button
                     onClick={(e) => {
-                      handleUpdateAuthor(
-                        auhtor.id,
-                        auhtor.name,
-                        auhtor.birthDate,
-                        auhtor.country
+                      handleUpdateCategory(
+                        category.id,
+                        category.name,
+                        category.description
                       );
                     }}
-                    className="update-author-btn"
+                    className="update-form-btn"
                   >
                     Update
                   </button>
@@ -330,4 +307,4 @@ const Auhtor = () => {
     </>
   );
 };
-export default Auhtor;
+export default Category;

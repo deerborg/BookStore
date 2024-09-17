@@ -1,0 +1,16 @@
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: silver;
+  margin-top: 2rem;
+}
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+}
+.footer-links a {
+  color: black;
+}
