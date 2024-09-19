@@ -32,9 +32,9 @@
   flex-direction: column;
   background: linear-gradient(
     to right,
-    rgba(192, 192, 192, 0.349),
+    rgb(192, 192, 192),
     white,
-    rgba(192, 192, 192, 0.349)
+    rgb(192, 192, 192)
   );
   filter: drop-shadow(0 0 0.3rem black);
 }

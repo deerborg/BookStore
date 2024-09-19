@@ -1,71 +1,111 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import categoryBaseUrl from "../../categoryApi";
+import publisherBaseUrl from "../../publisherApi";
+import bookBaseUrl from "../../bookApi";
+import authorBaseUrl from "../../authorApi";
+
+const selectAuthor = document.querySelector("#selectAuthor");
+
 const Book = () => {
-  // State başı
-  const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
-  const [errorMsg, setErrorMsg] = useState([]); // Mesajların listeye dahili
-  const [errorFlag, setErrorFlag] = useState(false); // Hata durumu kontrolü
-  const [category, setCategory] = useState({
+  const [error, setError] = useState([]);
+  const [errorMsg, setErrorMsg] = useState([]);
+  const [errorFlag, setErrorFlag] = useState(false);
+  const [book, setBook] = useState({
     name: "",
-    description: "",
-  }); // Kayıt için field
-  const [updateCategory, setUpdateCategory] = useState({
+    publicationYear: "",
+    stock: "",
+    author: {
+      id: "",
+      name: "",
+    },
+    publisher: {
+      id: "",
+      name: "",
+    },
+    categories: [],
+  });
+  const [updateBook, setUpdateBook] = useState({
     id: "",
     name: "",
-    description: "",
-  }); // Güncelleme için filed
-  const [categories, setCategories] = useState([]); // YAzar listesi
-  const [categoryListChange, setCategoryListChange] = useState(false); // Yazar listesi güncellenme kontrolü
-  const [showCategories, setShowCategories] = useState(false); // Yazar listesi gizle göster
-  const [showCategoryBtnName, setShowCategoryBtnName] =
-    useState("Show All Category"); // Yazar listesi duruma göre isim değişimi
-  const [checkStats, setCheckStats] = useState(""); // Başarılı işlemler için
-  const [createButtonVisible, setCreateButtonVisible] = useState(true); // Güncelleme işlemlerinde Yeni yazar oluştur butonunu gizler
-  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false); // Güncelleme işlemleri için İptal ve Kaydet butonlarını aktif eder
-  // State sonu
+    stock: "",
+    publicationYear: "",
+    author: {
+      id: "",
+    },
+    publisher: {
+      id: "",
+    },
+    categories: [],
+  });
+  const [books, setBooks] = useState([]);
+  const [author, setAuthor] = useState([]);
+  const [publisher, setPublisher] = useState([]);
+  const [category, setCategory] = useState([]);
+  const [bookListChange, setBookListChange] = useState(false);
+  const [showBooks, setShowBook] = useState(false);
+  const [showBookBtnName, setShowBookBtnName] = useState("Show All Book");
+  const [checkStats, setCheckStats] = useState("");
+  const [createButtonVisible, setCreateButtonVisible] = useState(true);
+  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
 
-  // Kayıt için standart şablon
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCategory({
-      ...category,
+    setBook({
+      ...book,
       [name]: value,
     });
-    // Update içinde gerekli standart şablon
-    setUpdateCategory({
-      ...updateCategory,
+
+    setUpdateBook({
+      ...updateBook,
       [name]: value,
     });
   };
 
-  const handleUpdateCategory = (id, name, description) => {
+  const handleUpdateBook = (
+    id,
+    name,
+    publicationYear,
+    stock,
+    authorId,
+    publisherId,
+    categories
+  ) => {
     setCreateButtonVisible(false);
     setUpdateButtonsVisible(true);
-    const updateCategory = {
+
+    const updateBookData = {
+      id: id,
       name: name,
-      description: description,
+      publicationYear: publicationYear,
+      stock: stock,
+      author: { id: authorId },
+      publisher: {
+        id: publisherId,
+      },
+      categories: categories.map((cat) => ({ id: cat })),
     };
 
-    setCategory(updateCategory); // Formu doldurmak için
-    setUpdateCategory({
-      id: id,
-      ...updateCategory, // Update işlemi için
-    });
+    setBook(updateBookData);
+
+    setUpdateBook(updateBookData);
   };
 
   const handleUpdateSaveClick = () => {
-    // Boş  veya tanımlanmamış fieldlar için
+    if (book.categories[0].id === undefined) {
+      book.categories.shift();
+    }
+
     if (
-      category.name === "" ||
-      category.name === undefined ||
-      category.description === "" ||
-      category.description === undefined
+      book.name === "" ||
+      book.name === undefined ||
+      book.publicationYear === "" ||
+      book.publicationYear === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
         setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
+          const clearError = [];
           setError(clearError);
           setErrorFlag(false);
         }, 2000);
@@ -73,14 +113,16 @@ const Book = () => {
       clearMsg();
     } else {
       axios
-        .put(categoryBaseUrl.baseUrl + "/" + updateCategory.id, updateCategory)
+        .put(bookBaseUrl.baseUrl + "/" + updateBook.id, book)
         .then((res) => {
           setErrorFlag(false);
-          setCategoryListChange(true);
-          setCategory({
+          setBookListChange(true);
+          setBook({
             name: "",
-            description: "",
+            publicationYear: "",
+            stock: "",
           });
+
           setCheckStats("Updated");
           function clearStats() {
             setTimeout(() => {
@@ -92,30 +134,27 @@ const Book = () => {
         .catch((e) => {
           console.log(e);
           if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
             const err = ["Server Down"];
             setError(err);
           } else {
             setError(["Bad Request"]);
           }
         })
-        .finally(setCategoryListChange(false));
+        .finally(setBookListChange(false));
     }
   };
 
-  // Yazar kaydı isteği
-  const handleSaveCategory = () => {
-    // Boş  veya tanımlanmamış fieldlar için
+  const handleSaveBook = () => {
     if (
-      category.name === "" ||
-      category.name === undefined ||
-      category.description === "" ||
-      category.description === undefined
+      book.name === "" ||
+      book.name === undefined ||
+      book.publicationYear === "" ||
+      book.publicationYear === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
         setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
+          const clearError = [];
           setError(clearError);
           setErrorFlag(false);
         }, 2000);
@@ -123,25 +162,29 @@ const Book = () => {
       clearMsg();
     } else {
       axios
-        .post(categoryBaseUrl.baseUrl, category)
+        .post(bookBaseUrl.baseUrl, book)
         .then((res) => {
           setErrorFlag(false);
-          setCategoryListChange(true);
-          setCategory({
+          setBookListChange(true);
+          setBook({
             name: "",
-            description: "",
+            publicationYear: "",
+            stock: "",
+            author: { id: "", name: "" },
+            publisher: { id: "", name: "" },
+            categories: [],
           });
           setCheckStats("Created");
           function clearStats() {
             setTimeout(() => {
               setCheckStats("");
+              window.location.reload();
             }, 2000);
           }
           clearStats();
         })
         .catch((e) => {
           if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
             const err = ["Server Down"];
             setError(err);
           } else {
@@ -150,11 +193,10 @@ const Book = () => {
             console.log(e);
           }
         })
-        .finally(setCategoryListChange(false));
+        .finally(setBookListChange(false));
     }
   };
 
-  // Backendden gelen exceptionları diziye aktarma
   useEffect(() => {
     if (error.length > 0) {
       setErrorMsg(error);
@@ -162,30 +204,27 @@ const Book = () => {
     }
   }, [error]);
 
-  // Aktif listenin kayıt ve silme isteklerinden sonra yenilenmesi için
   useEffect(() => {
-    axios.get(categoryBaseUrl.baseUrl).then((res) => {
-      setCategories(res.data);
+    axios.get(bookBaseUrl.baseUrl).then((res) => {
+      setBooks(res.data);
     });
-  }, [categoryListChange]);
+  }, [bookListChange]);
 
-  // Yazarları listeleme butonu için
-  const handleShowCategory = () => {
-    if (showCategories) {
-      setShowCategoryBtnName("Show All Category");
-      return setShowCategories(false);
+  const handleShowBook = () => {
+    if (showBooks) {
+      setShowBookBtnName("Show All Category");
+      return setShowBook(false);
     }
-    setShowCategoryBtnName("Hidden List");
-    return setShowCategories(true);
+    setShowBookBtnName("Hidden List");
+    return setShowBook(true);
   };
 
-  // Yazar silme isteği
-  const handleDeleteCategory = (id) => {
+  const handleDeleteBook = (id) => {
     console.log(id);
     axios
-      .delete(categoryBaseUrl.baseUrl + "/" + id)
+      .delete(bookBaseUrl.baseUrl + "/" + id)
       .then((res) => {
-        setCategoryListChange(true);
+        setBookListChange(true);
         setCheckStats("Deleted");
         function clearStats() {
           setTimeout(() => {
@@ -197,17 +236,29 @@ const Book = () => {
       .catch((e) => {
         console.log(e);
       })
-      .finally(setCategoryListChange(false));
+      .finally(setBookListChange(false));
   };
 
   const handleCancelClick = () => {
-    setCategory({
+    setBook({
       name: "",
-      description: "",
+      publicationYear: "",
     });
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
   };
+
+  useEffect(() => {
+    axios.get(authorBaseUrl.baseUrl).then((res) => {
+      setAuthor(res.data);
+    });
+    axios.get(publisherBaseUrl.baseUrl).then((res) => {
+      setPublisher(res.data);
+    });
+    axios.get(categoryBaseUrl.baseUrl).then((res) => {
+      setCategory(res.data);
+    });
+  }, []);
 
   return (
     <>
@@ -216,25 +267,103 @@ const Book = () => {
         <div className="form-inputs">
           <input
             name="name"
-            placeholder="Category Name"
+            placeholder="Book Name"
             required
             type="text"
-            value={category.name}
+            value={book.name}
             onChange={handleChange}
           />
 
           <input
-            name="description"
-            placeholder="Category Description"
+            name="stock"
+            placeholder="Book Stock"
             required
-            type="text"
-            value={category.description}
+            type="number"
+            value={book.stock}
             onChange={handleChange}
           />
+
+          <input
+            name="publicationYear"
+            placeholder="Book Year"
+            required
+            type="number"
+            value={book.publicationYear}
+            onChange={handleChange}
+          />
+          <select
+            value={book.author?.id}
+            name="author"
+            onChange={(e) =>
+              setBook({ ...book, author: { id: e.target.value } })
+            }
+          >
+            <option value={0} disabled selected>
+              Select Author
+            </option>
+            {author?.map((e) => {
+              return (
+                <>
+                  <option value={e.id}>{e.name}</option>
+                </>
+              );
+            })}
+          </select>
+
+          <select
+            value={book.publisher?.id}
+            onChange={(e) =>
+              setBook({ ...book, publisher: { id: e.target.value } })
+            }
+          >
+            <option value={0} disabled selected>
+              Select Publisher
+            </option>
+            {publisher.map((e) => {
+              return (
+                <>
+                  <option value={e.id}>{e.name}</option>
+                </>
+              );
+            })}
+          </select>
+
+          {/* kayıt sonrası checkbox sıfırlanacak */}
+          <div className="select-categories-check-list">
+            {category.map((e) => {
+              return (
+                <>
+                  <label>{e.name}</label>
+                  <input
+                    onChange={(ev) => {
+                      if (ev.target.checked) {
+                        setBook({
+                          ...book,
+                          categories: [
+                            ...book.categories,
+                            { id: ev.target.value },
+                          ],
+                        });
+                      } else {
+                        setBook({
+                          ...book,
+                          categories: book.categories.filter(
+                            (cat) => cat.id !== ev.target.value
+                          ),
+                        });
+                      }
+                    }}
+                    type="checkbox"
+                    value={e.id}
+                  />
+                </>
+              );
+            })}
+          </div>
         </div>
         {createButtonVisible && (
-          <button className="form-submit-btn" onClick={handleSaveCategory}>
-            Create Category
+          <button className="form-submit-btn" onClick={handleSaveBook}>
+            Create Book
           </button>
         )}
 
@@ -266,21 +395,30 @@ const Book = () => {
               })}
           </div>
         )}
-        <button onClick={handleShowCategory} className="show-form-btn">
-          {showCategoryBtnName}
+        <button onClick={handleShowBook} className="show-form-btn">
+          {showBookBtnName}
         </button>
       </div>
-      {showCategories && (
+      {showBooks && (
         <div className="form-list">
-          {categories.map((category) => {
+          {books.map((book) => {
             return (
               <>
                 <div className="form-list-lable">
-                  <h3>Category Name: {category.name}</h3>
-                  <h3>Category Description: {category.description}</h3>
+                  <h3>Book: {book.name}</h3>
+                  <h3>Stock: {book.stock}</h3>
+                  <h3>Year: {book.publicationYear}</h3>
+                  <h3>Author: {book.author.name}</h3>
+                  <h3>Publisher: {book.publisher.name}</h3>
+                  <h3>
+                    Categories:{" "}
+                    {book.categories && book.categories.length > 0
+                      ? book.categories.map((e) => e.name).join(", ")
+                      : "No Categories"}
+                  </h3>
                   <button
                     onClick={(e) => {
-                      handleDeleteCategory(category.id);
+                      handleDeleteBook(book.id);
                     }}
                     className="delete-form-btn"
                   >
@@ -288,10 +426,14 @@ const Book = () => {
                   </button>
                   <button
                     onClick={(e) => {
-                      handleUpdateCategory(
-                        category.id,
-                        category.name,
-                        category.description
+                      handleUpdateBook(
+                        book.id,
+                        book.name,
+                        book.publicationYear,
+                        book.stock,
+                        book.author.id,
+                        book.publisher.id,
+                        book.categories.map((c) => c.id)
                       );
                     }}
                     className="update-form-btn"
