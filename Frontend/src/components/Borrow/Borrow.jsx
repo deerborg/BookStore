@@ -4,58 +4,45 @@ import categoryBaseUrl from "../../api/categoryApi";
 import publisherBaseUrl from "../../api/publisherApi";
 import bookBaseUrl from "../../api/bookApi";
 import authorBaseUrl from "../../api/authorApi";
+import borrowBaseUrl from "../../api/borrowApi";
 
-const Book = () => {
+const Borrow = () => {
   const [error, setError] = useState([]);
   const [errorMsg, setErrorMsg] = useState([]);
   const [errorFlag, setErrorFlag] = useState(false);
-  const [book, setBook] = useState({
-    name: "",
-    publicationYear: "",
-    stock: "",
-    author: {
+  const [borrow, setBorrow] = useState({
+    borrowerName: "",
+    borrowerMail: "",
+    borrowingDate: "",
+    bookForBorrowingRequest: {
       id: "",
       name: "",
     },
-    publisher: {
-      id: "",
-      name: "",
-    },
-    categories: [],
   });
-  const [updateBook, setUpdateBook] = useState({
+  const [updateBorrow, setUpdateBorrow] = useState({
     id: "",
-    name: "",
-    stock: "",
-    publicationYear: "",
-    author: {
-      id: "",
-    },
-    publisher: {
-      id: "",
-    },
-    categories: [],
+    borrowerName: "",
+    borrowingDate: "",
+    returnDate: "",
   });
-  const [books, setBooks] = useState([]);
-  const [author, setAuthor] = useState([]);
-  const [publisher, setPublisher] = useState([]);
-  const [category, setCategory] = useState([]);
-  const [bookListChange, setBookListChange] = useState(false);
-  const [showBooks, setShowBook] = useState(false);
-  const [showBookBtnName, setShowBookBtnName] = useState("Show All Book");
+  const [borrows, setBorrows] = useState([]);
+  const [book, setBooks] = useState([]);
+  const [borrowListChange, setBorrowListChange] = useState(false);
+  const [showBorrows, setShowBorrows] = useState(false);
+  const [showBorrowBtnName, setShowBorrowBtnName] = useState("Show All Borrow");
   const [checkStats, setCheckStats] = useState("");
   const [createButtonVisible, setCreateButtonVisible] = useState(true);
   const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setBook({
-      ...book,
+    setBorrow({
+      ...borrow,
       [name]: value,
     });
 
-    setUpdateBook({
-      ...updateBook,
+    setUpdateBorrow({
+      ...updateBorrow,
       [name]: value,
     });
   };
@@ -84,21 +71,17 @@ const Book = () => {
       categories: categories.map((cat) => ({ id: cat })),
     };
 
-    setBook(updateBookData);
+    setBorrow(updateBookData);
 
-    setUpdateBook(updateBookData);
+    setUpdateBorrow(updateBookData);
   };
 
   const handleUpdateSaveClick = () => {
-    if (book.categories[0].id === undefined) {
-      book.categories.shift();
-    }
-
     if (
-      book.name === "" ||
-      book.name === undefined ||
-      book.publicationYear === "" ||
-      book.publicationYear === undefined
+      borrow.borrowerName === "" ||
+      borrow.borrowerName === undefined ||
+      borrow.borrowerMail === "" ||
+      borrow.borrowerMail === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
@@ -111,14 +94,14 @@ const Book = () => {
       clearMsg();
     } else {
       axios
-        .put(bookBaseUrl.baseUrl + "/" + updateBook.id, book)
+        .put(borrowBaseUrl.baseUrl + "/" + updateBorrow.id, updateBorrow)
         .then((res) => {
           setErrorFlag(false);
-          setBookListChange(true);
-          setBook({
-            name: "",
-            publicationYear: "",
-            stock: "",
+          setBorrowListChange(true);
+          setBorrow({
+            borrowerName: "",
+            borrowerMail: "",
+            borrowingDate: "",
           });
 
           setCheckStats("Updated");
@@ -138,16 +121,17 @@ const Book = () => {
             setError(["Bad Request"]);
           }
         })
-        .finally(setBookListChange(false));
+        .finally(setBorrowListChange(false));
     }
   };
 
   const handleSaveBook = () => {
+    console.log(borrow.bookForBorrowingRequest.id);
     if (
-      book.name === "" ||
-      book.name === undefined ||
-      book.publicationYear === "" ||
-      book.publicationYear === undefined
+      borrow.borrowerName === "" ||
+      borrow.borrowerName === undefined ||
+      borrow.borrowerMail === "" ||
+      borrow.borrowerMail === undefined
     ) {
       const emptyFieldErros = ["Empty Field"];
       const clearMsg = () =>
@@ -160,17 +144,15 @@ const Book = () => {
       clearMsg();
     } else {
       axios
-        .post(bookBaseUrl.baseUrl, book)
+        .post(borrowBaseUrl.baseUrl, borrow)
         .then((res) => {
           setErrorFlag(false);
-          setBookListChange(true);
-          setBook({
-            name: "",
-            publicationYear: "",
-            stock: "",
-            author: { id: "", name: "" },
-            publisher: { id: "", name: "" },
-            categories: [],
+          setBorrowListChange(true);
+          setBorrow({
+            borrowerName: "",
+            borrowerMail: "",
+            borrowingDate: "",
+            bookForBorrowingRequest: { id: "" },
           });
           setCheckStats("Created");
           function clearStats() {
@@ -191,7 +173,7 @@ const Book = () => {
             console.log(e);
           }
         })
-        .finally(setBookListChange(false));
+        .finally(setBorrowListChange(false));
     }
   };
 
@@ -203,26 +185,26 @@ const Book = () => {
   }, [error]);
 
   useEffect(() => {
-    axios.get(bookBaseUrl.baseUrl).then((res) => {
-      setBooks(res.data);
+    axios.get(borrowBaseUrl.baseUrl).then((res) => {
+      setBorrows(res.data);
     });
-  }, [bookListChange]);
+  }, [borrowListChange]);
 
   const handleShowBook = () => {
-    if (showBooks) {
-      setShowBookBtnName("Show All Category");
-      return setShowBook(false);
+    if (showBorrows) {
+      setShowBorrowBtnName("Show All Category");
+      return setShowBorrows(false);
     }
-    setShowBookBtnName("Hidden List");
-    return setShowBook(true);
+    setShowBorrowBtnName("Hidden List");
+    return setShowBorrows(true);
   };
 
   const handleDeleteBook = (id) => {
     console.log(id);
     axios
-      .delete(bookBaseUrl.baseUrl + "/" + id)
+      .delete(borrowBaseUrl.baseUrl + "/" + id)
       .then((res) => {
-        setBookListChange(true);
+        setBorrowListChange(true);
         setCheckStats("Deleted");
         function clearStats() {
           setTimeout(() => {
@@ -234,27 +216,21 @@ const Book = () => {
       .catch((e) => {
         console.log(e);
       })
-      .finally(setBookListChange(false));
+      .finally(setBorrowListChange(false));
   };
 
   const handleCancelClick = () => {
-    setBook({
-      name: "",
-      publicationYear: "",
+    setBorrow({
+      borrowerName: "",
+      borrowerMail: "",
     });
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
   };
 
   useEffect(() => {
-    axios.get(authorBaseUrl.baseUrl).then((res) => {
-      setAuthor(res.data);
-    });
-    axios.get(publisherBaseUrl.baseUrl).then((res) => {
-      setPublisher(res.data);
-    });
-    axios.get(categoryBaseUrl.baseUrl).then((res) => {
-      setCategory(res.data);
+    axios.get(bookBaseUrl.baseUrl).then((res) => {
+      setBooks(res.data);
     });
   }, []);
 
@@ -264,41 +240,44 @@ const Book = () => {
         <h3 className="form-stats-for-submit">{checkStats}</h3>
         <div className="form-inputs">
           <input
-            name="name"
-            placeholder="Book Name"
+            name="borrowerName"
+            placeholder="Borrower Name"
             required
             type="text"
-            value={book.name}
+            value={borrow.borrowerName}
             onChange={handleChange}
           />
 
           <input
-            name="stock"
-            placeholder="Book Stock"
+            name="borrowingDate"
+            placeholder="Borrower Date"
             required
-            type="number"
-            value={book.stock}
+            type="date"
+            value={borrow.borrowingDate}
             onChange={handleChange}
           />
 
           <input
-            name="publicationYear"
-            placeholder="Book Year"
+            name="borrowerMail"
+            placeholder="Borrower Mail"
             required
-            type="number"
-            value={book.publicationYear}
+            type="email"
+            value={borrow.borrowerMail}
             onChange={handleChange}
           />
           <select
-            name="author"
+            name="bookForBorrowingRequest"
             onChange={(e) =>
-              setBook({ ...book, author: { id: e.target.value } })
+              setBorrow({
+                ...borrow,
+                bookForBorrowingRequest: { id: e.target.value },
+              })
             }
           >
             <option value={0} disabled selected>
-              Select Author
+              Select Book
             </option>
-            {author?.map((e) => {
+            {book?.map((e) => {
               return (
                 <>
                   <option value={e.id}>{e.name}</option>
@@ -306,56 +285,6 @@ const Book = () => {
               );
             })}
           </select>
-
-          <select
-            onChange={(e) =>
-              setBook({ ...book, publisher: { id: e.target.value } })
-            }
-          >
-            <option value={0} disabled selected>
-              Select Publisher
-            </option>
-            {publisher.map((e) => {
-              return (
-                <>
-                  <option value={e.id}>{e.name}</option>
-                </>
-              );
-            })}
-          </select>
-
-          {/* kayıt sonrası checkbox sıfırlanacak */}
-          <div className="select-categories-check-list">
-            {category.map((e) => {
-              return (
-                <>
-                  <label>{e.name}</label>
-                  <input
-                    onChange={(ev) => {
-                      if (ev.target.checked) {
-                        setBook({
-                          ...book,
-                          categories: [
-                            ...book.categories,
-                            { id: ev.target.value },
-                          ],
-                        });
-                      } else {
-                        setBook({
-                          ...book,
-                          categories: book.categories.filter(
-                            (cat) => cat.id !== ev.target.value
-                          ),
-                        });
-                      }
-                    }}
-                    type="checkbox"
-                    value={e.id}
-                  />
-                </>
-              );
-            })}
-          </div>
         </div>
         {createButtonVisible && (
           <button className="form-submit-btn" onClick={handleSaveBook}>
@@ -392,29 +321,22 @@ const Book = () => {
           </div>
         )}
         <button onClick={handleShowBook} className="show-form-btn">
-          {showBookBtnName}
+          {showBorrowBtnName}
         </button>
       </div>
-      {showBooks && (
+      {showBorrows && (
         <div className="form-list">
-          {books.map((book) => {
+          {borrows.map((borrow) => {
             return (
               <>
                 <div className="form-list-lable">
-                  <h3>Book: {book.name}</h3>
-                  <h3>Stock: {book.stock}</h3>
-                  <h3>Year: {book.publicationYear}</h3>
-                  <h3>Author: {book.author.name}</h3>
-                  <h3>Publisher: {book.publisher.name}</h3>
-                  <h3>
-                    Categories:{" "}
-                    {book.categories && book.categories.length > 0
-                      ? book.categories.map((e) => e.name).join(", ")
-                      : "No Categories"}
-                  </h3>
+                  <h3>Name: {borrow.borrowerName}</h3>
+                  <h3>Mail: {borrow.borrowerMail}</h3>
+                  <h3>Borrow Date: {borrow.borrowingDate}</h3>
+                  <h3>Book: {borrow.book.name}</h3>
                   <button
                     onClick={(e) => {
-                      handleDeleteBook(book.id);
+                      handleDeleteBook(borrow.id);
                     }}
                     className="delete-form-btn"
                   >
@@ -423,13 +345,13 @@ const Book = () => {
                   <button
                     onClick={(e) => {
                       handleUpdateBook(
-                        book.id,
-                        book.name,
-                        book.publicationYear,
-                        book.stock,
-                        book.author.id,
-                        book.publisher.id,
-                        book.categories.map((c) => c.id)
+                        borrow.id,
+                        borrow.name,
+                        borrow.publicationYear,
+                        borrow.stock,
+                        borrow.author.id,
+                        borrow.publisher.id,
+                        borrow.categories.map((c) => c.id)
                       );
                     }}
                     className="update-form-btn"
@@ -445,4 +367,4 @@ const Book = () => {
     </>
   );
 };
-export default Book;
+export default Borrow;

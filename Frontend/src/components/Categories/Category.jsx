@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import categoryBaseUrl from "../../categoryApi";
+import categoryBaseUrl from "../../api/categoryApi";
 const Category = () => {
   // State başı
   const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
@@ -73,7 +73,7 @@ const Category = () => {
       clearMsg();
     } else {
       axios
-        .put(categoryBaseUrl.baseUrl + "/" + updateCategory.id, updateCategory)
+        .put(c.baseUrl + "/" + updateCategory.id, updateCategory)
         .then((res) => {
           setErrorFlag(false);
           setCategoryListChange(true);

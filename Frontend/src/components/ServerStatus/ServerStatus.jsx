@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import authorBaseUrl from "../../authorApi";
+import authorBaseUrl from "../../api/authorApi";
 
 const ServerStatus = () => {
   const [status, setStatus] = useState("loading server...");

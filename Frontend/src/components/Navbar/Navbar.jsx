@@ -9,11 +9,11 @@ const Navbar = () => {
       </div>
       <div className="navs">
         <Link to="/">Home</Link>
-        <Link to="/publisher">Publisher</Link>
         <Link to="/author">Author</Link>
+        <Link to="/publisher">Publisher</Link>
         <Link to="/category">Categories</Link>
         <Link to="/book">Book</Link>
-        <a href="#">Borrowing</a>
+        <Link to="/borrow">Borrow</Link>
       </div>
     </nav>
   );

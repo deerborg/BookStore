@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import authorBaseUrl from "../../authorApi";
+import categoryBaseUrl from "../../api/categoryApi";
+import publisherBaseUrl from "../../api/publisherApi";
+import bookBaseUrl from "../../api/bookApi";
+import authorBaseUrl from "../../api/authorApi";
+import borrowBaseUrl from "../../api/borrowApi";
 const Auhtor = () => {
   // State başı
   const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
