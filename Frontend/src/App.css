@@ -46,6 +46,8 @@ body {
   flex-direction: column;
   align-items: center;
   margin-top: 4rem;
+  align-items: center;
+  justify-content: center;
 }
 .form-inputs input {
   width: 14rem;
@@ -62,6 +64,7 @@ body {
   padding: 1rem;
   gap: 1rem;
   border-radius: 0.3rem;
+  align-items: center;
 }
 
 .form-submit-btn {
@@ -160,4 +163,46 @@ body {
   display: flex;
   flex-direction: row;
   gap: 2rem;
+}
+
+.form-inputs select {
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.2rem;
+}
+
+.select-categories-check-list {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+}
+.select-categories-check-list input {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  width: fit-content;
+  align-items: center;
+}
+.select-categories-check-list label {
+  border: 1px solid rgba(0, 0, 0, 0.425);
+  border-radius: 0.3rem;
+  display: flex;
+  margin: 0;
+  padding: 0.3rem;
+  gap: 1rem;
+  align-items: center;
+}
+.checkbox-title {
+  margin-top: 1rem;
+}
+
+.select-categories-check-list select {
+  border-radius: 0.3rem;
+  padding: 3rem;
+  border: none;
+  overflow: hidden;
+}
+
+.option {
+  font-size: 0.7rem;
 }

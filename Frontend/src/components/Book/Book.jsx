@@ -4,6 +4,7 @@ import categoryBaseUrl from "../../api/categoryApi";
 import publisherBaseUrl from "../../api/publisherApi";
 import bookBaseUrl from "../../api/bookApi";
 import authorBaseUrl from "../../api/authorApi";
+import validateFields from "../../common/util/checkField";
 
 const Book = () => {
   const [error, setError] = useState([]);
@@ -46,7 +47,9 @@ const Book = () => {
   const [checkStats, setCheckStats] = useState("");
   const [createButtonVisible, setCreateButtonVisible] = useState(true);
   const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
-
+  const [cheked, setCheked] = useState();
+  const [selectedDefaultValue, setSelectedDefaultValue] = useState();
+  const [newChekedArray, setNewCheckedArray] = useState([]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBook({
@@ -94,21 +97,14 @@ const Book = () => {
       book.categories.shift();
     }
 
-    if (
-      book.name === "" ||
-      book.name === undefined ||
-      book.publicationYear === "" ||
-      book.publicationYear === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = [];
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
+    const errors = validateFields(book);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
     } else {
       axios
         .put(bookBaseUrl.baseUrl + "/" + updateBook.id, book)
@@ -120,11 +116,14 @@ const Book = () => {
             publicationYear: "",
             stock: "",
           });
+          setCheked(false);
 
           setCheckStats("Updated");
+          setSelectedDefaultValue(0);
           function clearStats() {
             setTimeout(() => {
               setCheckStats("");
+              setCheked();
             }, 2000);
           }
           clearStats();
@@ -138,26 +137,20 @@ const Book = () => {
             setError(["Bad Request"]);
           }
         })
-        .finally(setBookListChange(false));
+        .finally(setBookListChange(false))
+        .finally(setSelectedDefaultValue());
     }
   };
 
   const handleSaveBook = () => {
-    if (
-      book.name === "" ||
-      book.name === undefined ||
-      book.publicationYear === "" ||
-      book.publicationYear === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = [];
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
+    const errors = validateFields(book);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
     } else {
       axios
         .post(bookBaseUrl.baseUrl, book)
@@ -172,11 +165,13 @@ const Book = () => {
             publisher: { id: "", name: "" },
             categories: [],
           });
+          setCheked(false);
+          setSelectedDefaultValue(0);
           setCheckStats("Created");
           function clearStats() {
             setTimeout(() => {
               setCheckStats("");
-              window.location.reload();
+              setCheked();
             }, 2000);
           }
           clearStats();
@@ -191,7 +186,8 @@ const Book = () => {
             console.log(e);
           }
         })
-        .finally(setBookListChange(false));
+        .finally(setBookListChange(false))
+        .finally(setSelectedDefaultValue());
     }
   };
 
@@ -203,6 +199,7 @@ const Book = () => {
   }, [error]);
 
   useEffect(() => {
+    setSelectedDefaultValue();
     axios.get(bookBaseUrl.baseUrl).then((res) => {
       setBooks(res.data);
     });
@@ -238,9 +235,16 @@ const Book = () => {
   };
 
   const handleCancelClick = () => {
+    setSelectedDefaultValue(0);
+    setCheked(false);
+    setTimeout(() => {
+      setSelectedDefaultValue();
+      setCheked();
+    }, 100);
     setBook({
       name: "",
       publicationYear: "",
+      stock: "",
     });
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
@@ -291,6 +295,7 @@ const Book = () => {
           />
           <select
             name="author"
+            value={selectedDefaultValue}
             onChange={(e) =>
               setBook({ ...book, author: { id: e.target.value } })
             }
@@ -308,6 +313,7 @@ const Book = () => {
           </select>
 
           <select
+            value={selectedDefaultValue}
             onChange={(e) =>
               setBook({ ...book, publisher: { id: e.target.value } })
             }
@@ -324,37 +330,29 @@ const Book = () => {
             })}
           </select>
 
-          {/* kayıt sonrası checkbox sıfırlanacak */}
           <div className="select-categories-check-list">
-            {category.map((e) => {
-              return (
-                <>
-                  <label>{e.name}</label>
-                  <input
-                    onChange={(ev) => {
-                      if (ev.target.checked) {
-                        setBook({
-                          ...book,
-                          categories: [
-                            ...book.categories,
-                            { id: ev.target.value },
-                          ],
-                        });
-                      } else {
-                        setBook({
-                          ...book,
-                          categories: book.categories.filter(
-                            (cat) => cat.id !== ev.target.value
-                          ),
-                        });
-                      }
-                    }}
-                    type="checkbox"
-                    value={e.id}
-                  />
-                </>
-              );
-            })}
+            <select
+              className="selected-multiple-categories"
+              multiple
+              onChange={(e) => {
+                const selectedOptions = Array.from(
+                  e.target.selectedOptions,
+                  (option) => ({
+                    id: option.value,
+                  })
+                );
+                setBook({ ...book, categories: selectedOptions });
+              }}
+            >
+              <option className="option" value={0} disabled>
+                Mouse ile basılı tutup çoklu seçebilirsiniz
+              </option>
+              {category.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         {createButtonVisible && (
@@ -397,24 +395,24 @@ const Book = () => {
       </div>
       {showBooks && (
         <div className="form-list">
-          {books.map((book) => {
+          {books.map((books) => {
             return (
               <>
                 <div className="form-list-lable">
-                  <h3>Book: {book.name}</h3>
-                  <h3>Stock: {book.stock}</h3>
-                  <h3>Year: {book.publicationYear}</h3>
-                  <h3>Author: {book.author.name}</h3>
-                  <h3>Publisher: {book.publisher.name}</h3>
+                  <h3>Book: {books.name}</h3>
+                  <h3>Stock: {books.stock}</h3>
+                  <h3>Year: {books.publicationYear}</h3>
+                  <h3>Author: {books.author.name}</h3>
+                  <h3>Publisher: {books.publisher.name}</h3>
                   <h3>
                     Categories:{" "}
-                    {book.categories && book.categories.length > 0
-                      ? book.categories.map((e) => e.name).join(", ")
+                    {books.categories && books.categories.length > 0
+                      ? books.categories.map((e) => e.name).join(", ")
                       : "No Categories"}
                   </h3>
                   <button
                     onClick={(e) => {
-                      handleDeleteBook(book.id);
+                      handleDeleteBook(books.id);
                     }}
                     className="delete-form-btn"
                   >
@@ -423,13 +421,13 @@ const Book = () => {
                   <button
                     onClick={(e) => {
                       handleUpdateBook(
-                        book.id,
-                        book.name,
-                        book.publicationYear,
-                        book.stock,
-                        book.author.id,
-                        book.publisher.id,
-                        book.categories.map((c) => c.id)
+                        books.id,
+                        books.name,
+                        books.publicationYear,
+                        books.stock,
+                        books.author.id,
+                        books.publisher.id,
+                        books.categories.map((c) => c.id)
                       );
                     }}
                     className="update-form-btn"

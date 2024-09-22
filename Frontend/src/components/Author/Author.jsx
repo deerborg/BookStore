@@ -1,172 +1,128 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import categoryBaseUrl from "../../api/categoryApi";
-import publisherBaseUrl from "../../api/publisherApi";
-import bookBaseUrl from "../../api/bookApi";
 import authorBaseUrl from "../../api/authorApi";
-import borrowBaseUrl from "../../api/borrowApi";
+import validateFields from "../../common/util/checkField";
+import putRequest from "../../common/request/putRequest";
+import postRequest from "../../common/request/postRequest";
+import deleteRequest from "../../common/request/deleteRequest";
+import resetFormField from "../../common/util/resetFormField";
+
 const Auhtor = () => {
-  // State başı
-  const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
-  const [errorMsg, setErrorMsg] = useState([]); // Mesajların listeye dahili
-  const [errorFlag, setErrorFlag] = useState(false); // Hata durumu kontrolü
+  const [error, setError] = useState([]);
+  const [errorMsg, setErrorMsg] = useState([]);
+  const [errorFlag, setErrorFlag] = useState(false);
   const [author, setAuthor] = useState({
     name: "",
     birthDate: "",
     country: "",
-  }); // Kayıt için field
+  });
   const [updateAuthor, setUpdateAuthor] = useState({
     id: "",
     name: "",
     birthDate: "",
     country: "",
-  }); // Güncelleme için filed
-  const [authors, setAuthors] = useState([]); // YAzar listesi
-  const [authorListChange, setAuthorListChange] = useState(false); // Yazar listesi güncellenme kontrolü
-  const [showAuthors, setShowAuthors] = useState(false); // Yazar listesi gizle göster
+  });
+  const [authors, setAuthors] = useState([]);
+  const [authorListChange, setAuthorListChange] = useState(false);
+  const [showAuthors, setShowAuthors] = useState(false);
   const [shotAuthorsBtnName, setShowAuthorsBtnName] =
-    useState("Show All Authors"); // Yazar listesi duruma göre isim değişimi
-  const [checkStats, setCheckStats] = useState(""); // Başarılı işlemler için
-  const [createButtonVisible, setCreateButtonVisible] = useState(true); // Güncelleme işlemlerinde Yeni yazar oluştur butonunu gizler
-  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false); // Güncelleme işlemleri için İptal ve Kaydet butonlarını aktif eder
-  // State sonu
+    useState("Show All Authors");
+  const [checkStats, setCheckStats] = useState("");
+  const [createButtonVisible, setCreateButtonVisible] = useState(true);
+  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
 
-  // Kayıt için standart şablon
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setAuthor({
-      ...author,
-      [name]: value,
+    setAuthor((prev) => ({ ...prev, [name]: value }));
+    setUpdateAuthor((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetAuthorForm = () => {
+    resetFormField(setAuthor, {
+      name: "",
+      birthDate: "",
+      country: "",
     });
-    // Update içinde gerekli standart şablon
-    setUpdateAuthor({
-      ...updateAuthor,
-      [name]: value,
-    });
+  };
+
+  const handleValidationErrors = (errors) => {
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
+      return true;
+    }
+    return false;
+  };
+
+  const requestHandler = (method, data) => {
+    if (method === "POST") {
+      postRequest(
+        authorBaseUrl.baseUrl,
+        data,
+        resetAuthorForm,
+        setAuthorListChange,
+        setErrorFlag,
+        setCheckStats,
+        setError
+      );
+    } else if (method === "PUT") {
+      putRequest(
+        authorBaseUrl.baseUrl,
+        data.id,
+        data,
+        resetAuthorForm,
+        setAuthorListChange,
+        setErrorFlag,
+        setCheckStats,
+        setError
+      );
+    }
+  };
+
+  const handleSaveAuthor = () => {
+    const errors = validateFields(author);
+    if (handleValidationErrors(errors)) return;
+
+    requestHandler("POST", author);
+  };
+
+  const handleUpdateSaveClick = () => {
+    const errors = validateFields(updateAuthor);
+    if (handleValidationErrors(errors)) return;
+
+    requestHandler("PUT", updateAuthor);
+  };
+
+  const handleDeleteAuthor = (id) => {
+    deleteRequest(
+      id,
+      authorBaseUrl.baseUrl,
+      resetAuthorForm,
+      setAuthorListChange,
+      setErrorFlag,
+      setCheckStats,
+      setError
+    );
   };
 
   const handleUpdateAuthor = (id, name, birthDate, country) => {
     setCreateButtonVisible(false);
     setUpdateButtonsVisible(true);
     const updatedAuthor = {
+      id: id,
       name: name,
       birthDate: birthDate,
       country: country,
     };
 
-    setAuthor(updatedAuthor); // Formu doldurmak için
-    setUpdateAuthor({
-      id: id,
-      ...updatedAuthor, // Update işlemi için
-    });
+    setAuthor(updatedAuthor);
+    setUpdateAuthor(updatedAuthor);
   };
 
-  const handleUpdateSaveClick = () => {
-    // Boş  veya tanımlanmamış fieldlar için
-    if (
-      author.name === "" ||
-      author.name === undefined ||
-      author.birthDate === "" ||
-      author.birthDate === undefined ||
-      author.country === "" ||
-      author.country === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
-    } else {
-      axios
-        .put(authorBaseUrl.baseUrl + "/" + updateAuthor.id, updateAuthor)
-        .then((res) => {
-          setErrorFlag(false);
-          setAuthorListChange(true);
-          setAuthor({
-            name: "",
-            birthDate: "",
-            country: "",
-          });
-          setCheckStats("Updated");
-          function clearStats() {
-            setTimeout(() => {
-              setCheckStats("");
-            }, 2000);
-          }
-          clearStats();
-        })
-        .catch((e) => {
-          console.log(e);
-          if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
-            const err = ["Server Down"];
-            setError(err);
-          } else {
-            setError(["Bad Request"]);
-          }
-        })
-        .finally(setAuthorListChange(false));
-    }
-  };
-
-  // Yazar kaydı isteği
-  const handleSaveAuthor = () => {
-    // Boş  veya tanımlanmamış fieldlar için
-    if (
-      author.name === "" ||
-      author.name === undefined ||
-      author.birthDate === "" ||
-      author.birthDate === undefined ||
-      author.country === "" ||
-      author.country === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
-    } else {
-      axios
-        .post(authorBaseUrl.baseUrl, author)
-        .then((res) => {
-          setErrorFlag(false);
-          setAuthorListChange(true);
-          setAuthor({
-            name: "",
-            birthDate: "",
-            country: "",
-          });
-          setCheckStats("Created");
-          function clearStats() {
-            setTimeout(() => {
-              setCheckStats("");
-            }, 2000);
-          }
-          clearStats();
-        })
-        .catch((e) => {
-          if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
-            const err = ["Server Down"];
-            setError(err);
-          } else {
-            const err = ["Bad Request. Contact a developer."];
-            setError(err);
-          }
-        })
-        .finally(setAuthorListChange(false));
-    }
-  };
-
-  // Backendden gelen exceptionları diziye aktarma
   useEffect(() => {
     if (error.length > 0) {
       setErrorMsg(error);
@@ -174,50 +130,19 @@ const Auhtor = () => {
     }
   }, [error]);
 
-  // Aktif listenin kayıt ve silme isteklerinden sonra yenilenmesi için
   useEffect(() => {
     axios.get(authorBaseUrl.baseUrl).then((res) => {
       setAuthors(res.data);
     });
   }, [authorListChange]);
 
-  // Yazarları listeleme butonu için
   const handeShowAuthors = () => {
-    if (showAuthors) {
-      setShowAuthorsBtnName("Show All Authors");
-      return setShowAuthors(false);
-    }
-    setShowAuthorsBtnName("Hidden List");
-    return setShowAuthors(true);
-  };
-
-  // Yazar silme isteği
-  const handleDeleteAuthor = (id) => {
-    console.log(id);
-    axios
-      .delete(authorBaseUrl.baseUrl + "/" + id)
-      .then((res) => {
-        setAuthorListChange(true);
-        setCheckStats("Deleted");
-        function clearStats() {
-          setTimeout(() => {
-            setCheckStats("");
-          }, 2000);
-        }
-        clearStats();
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(setAuthorListChange(false));
+    setShowAuthors(!showAuthors);
+    setShowAuthorsBtnName(showAuthors ? "Show All Authors" : "Hidden List");
   };
 
   const handleCancelClick = () => {
-    setAuthor({
-      name: "",
-      birthDate: "",
-      country: "",
-    });
+    resetAuthorForm();
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
   };
@@ -301,9 +226,6 @@ const Auhtor = () => {
                   <h3>Author Name: {auhtor.name}</h3>
                   <h3>Author Birthday: {auhtor.birthDate}</h3>
                   <h3>Author Country: {auhtor.country}</h3>
-                  {/* {auhtor.books.map((b) => {
-                    return <h3>Books: {b}</h3>;
-                  })} */}
                   <button
                     onClick={(e) => {
                       handleDeleteAuthor(auhtor.id);

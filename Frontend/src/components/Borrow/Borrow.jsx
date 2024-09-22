@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import categoryBaseUrl from "../../api/categoryApi";
-import publisherBaseUrl from "../../api/publisherApi";
+
 import bookBaseUrl from "../../api/bookApi";
-import authorBaseUrl from "../../api/authorApi";
+import validateFields from "../../common/util/checkField";
 import borrowBaseUrl from "../../api/borrowApi";
+import putRequest from "../../common/request/putRequest";
+import deleteRequest from "../../common/request/deleteRequest";
+import postRequest from "../../common/request/postRequest";
+import resetFormField from "../../common/util/resetFormField";
 
 const Borrow = () => {
   const [error, setError] = useState([]);
@@ -33,148 +36,154 @@ const Borrow = () => {
   const [checkStats, setCheckStats] = useState("");
   const [createButtonVisible, setCreateButtonVisible] = useState(true);
   const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
+  const [showUpdateReturnDate, setShowUpdateReturnDate] = useState(false);
+  const [hiddenOtherInputs, setHiddenOtherInputs] = useState(true);
+  const [hiddenSelectedBook, setHiddenSelectedBook] = useState(true);
+  const [selectedDefaultValue, setSelectedDefaultValue] = useState();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setBorrow({
-      ...borrow,
-      [name]: value,
-    });
+    setBorrow((prev) => ({ ...prev, [name]: value }));
 
-    setUpdateBorrow({
-      ...updateBorrow,
-      [name]: value,
+    setUpdateBorrow((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetBorrowForm = () => {
+    resetFormField(setBorrow, {
+      borrowerName: "",
+      borrowerMail: "",
+      borrowingDate: "",
+      bookForBorrowingRequest: {
+        id: "",
+        name: "",
+      },
     });
   };
 
-  const handleUpdateBook = (
+  const handleValidationErrors = (errors) => {
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
+      return true;
+    }
+    return false;
+  };
+
+  const requestHandler = (method, data) => {
+    if (method === "POST") {
+      axios
+        .get(bookBaseUrl.baseUrl + "/" + borrow.bookForBorrowingRequest.id)
+        .then((e) => {
+          if (e.data.stock <= 0) {
+            setErrorFlag(true);
+            const customError = ["Out of Book stock"];
+            setError(customError);
+            setTimeout(() => {
+              const customError = [""];
+              setError(customError);
+            }, 2000);
+          } else {
+            postRequest(
+              borrowBaseUrl.baseUrl,
+              data,
+              () => resetFormField,
+              setBorrowListChange,
+              setErrorFlag,
+              setCheckStats,
+              setError
+            );
+            setBorrow({
+              borrowerName: "",
+              borrowerMail: "",
+              borrowingDate: "",
+              bookForBorrowingRequest: {
+                id: "",
+                name: "",
+              },
+            });
+            setSelectedDefaultValue(0);
+            setTimeout(() => {
+              setSelectedDefaultValue();
+            }, 100);
+          }
+        });
+    } else if (method === "PUT") {
+      putRequest(
+        borrowBaseUrl.baseUrl,
+        data.id,
+        data,
+        () => resetBorrowForm,
+        setBorrowListChange,
+        setErrorFlag,
+        setCheckStats,
+        setError
+      );
+      setBorrow({
+        borrowerName: "",
+        borrowerMail: "",
+        borrowingDate: "",
+        bookForBorrowingRequest: {
+          id: "",
+          name: "",
+        },
+      });
+      setUpdateBorrow({
+        id: "",
+        borrowerName: "",
+        borrowingDate: "",
+        returnDate: "",
+      });
+    }
+  };
+
+  const handleSaveBorrower = () => {
+    const errors = validateFields(borrow);
+    if (handleValidationErrors(errors)) return;
+
+    requestHandler("POST", borrow);
+  };
+
+  const handleUpdateSaveClick = () => {
+    const errors = validateFields(updateBorrow);
+    if (handleValidationErrors(errors)) return;
+
+    requestHandler("PUT", updateBorrow);
+  };
+
+  const handleDeleteBorrower = (id) => {
+    deleteRequest(
+      id,
+      borrowBaseUrl.baseUrl,
+      () => resetBorrowForm,
+      setBorrowListChange,
+      setErrorFlag,
+      setCheckStats,
+      setError
+    );
+  };
+
+  const handleUpdateBorrower = (
     id,
-    name,
-    publicationYear,
-    stock,
-    authorId,
-    publisherId,
-    categories
+    borrowerName,
+    borrowingDate,
+    returnDate
   ) => {
     setCreateButtonVisible(false);
     setUpdateButtonsVisible(true);
 
-    const updateBookData = {
+    const updateBorrowData = {
       id: id,
-      name: name,
-      publicationYear: publicationYear,
-      stock: stock,
-      author: { id: authorId },
-      publisher: {
-        id: publisherId,
-      },
-      categories: categories.map((cat) => ({ id: cat })),
+      borrowerName: borrowerName,
+      borrowingDate: borrowingDate,
+      returnDate: returnDate,
     };
 
-    setBorrow(updateBookData);
-
-    setUpdateBorrow(updateBookData);
-  };
-
-  const handleUpdateSaveClick = () => {
-    if (
-      borrow.borrowerName === "" ||
-      borrow.borrowerName === undefined ||
-      borrow.borrowerMail === "" ||
-      borrow.borrowerMail === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = [];
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
-    } else {
-      axios
-        .put(borrowBaseUrl.baseUrl + "/" + updateBorrow.id, updateBorrow)
-        .then((res) => {
-          setErrorFlag(false);
-          setBorrowListChange(true);
-          setBorrow({
-            borrowerName: "",
-            borrowerMail: "",
-            borrowingDate: "",
-          });
-
-          setCheckStats("Updated");
-          function clearStats() {
-            setTimeout(() => {
-              setCheckStats("");
-            }, 2000);
-          }
-          clearStats();
-        })
-        .catch((e) => {
-          console.log(e);
-          if (e.code === "ERR_NETWORK") {
-            const err = ["Server Down"];
-            setError(err);
-          } else {
-            setError(["Bad Request"]);
-          }
-        })
-        .finally(setBorrowListChange(false));
-    }
-  };
-
-  const handleSaveBook = () => {
-    console.log(borrow.bookForBorrowingRequest.id);
-    if (
-      borrow.borrowerName === "" ||
-      borrow.borrowerName === undefined ||
-      borrow.borrowerMail === "" ||
-      borrow.borrowerMail === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = [];
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
-    } else {
-      axios
-        .post(borrowBaseUrl.baseUrl, borrow)
-        .then((res) => {
-          setErrorFlag(false);
-          setBorrowListChange(true);
-          setBorrow({
-            borrowerName: "",
-            borrowerMail: "",
-            borrowingDate: "",
-            bookForBorrowingRequest: { id: "" },
-          });
-          setCheckStats("Created");
-          function clearStats() {
-            setTimeout(() => {
-              setCheckStats("");
-              window.location.reload();
-            }, 2000);
-          }
-          clearStats();
-        })
-        .catch((e) => {
-          if (e.code === "ERR_NETWORK") {
-            const err = ["Server Down"];
-            setError(err);
-          } else {
-            const err = ["Bad Request. Contact a developer."];
-            setError(err);
-            console.log(e);
-          }
-        })
-        .finally(setBorrowListChange(false));
-    }
+    setUpdateBorrow(updateBorrowData);
+    setBorrow(updateBorrowData);
   };
 
   useEffect(() => {
@@ -190,33 +199,13 @@ const Borrow = () => {
     });
   }, [borrowListChange]);
 
-  const handleShowBook = () => {
+  const handleShowBorrower = () => {
     if (showBorrows) {
       setShowBorrowBtnName("Show All Category");
       return setShowBorrows(false);
     }
     setShowBorrowBtnName("Hidden List");
     return setShowBorrows(true);
-  };
-
-  const handleDeleteBook = (id) => {
-    console.log(id);
-    axios
-      .delete(borrowBaseUrl.baseUrl + "/" + id)
-      .then((res) => {
-        setBorrowListChange(true);
-        setCheckStats("Deleted");
-        function clearStats() {
-          setTimeout(() => {
-            setCheckStats("");
-          }, 2000);
-        }
-        clearStats();
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(setBorrowListChange(false));
   };
 
   const handleCancelClick = () => {
@@ -226,6 +215,9 @@ const Borrow = () => {
     });
     setUpdateButtonsVisible(false);
     setCreateButtonVisible(true);
+    setShowUpdateReturnDate(false);
+    setHiddenOtherInputs(true);
+    setHiddenSelectedBook(true);
   };
 
   useEffect(() => {
@@ -239,56 +231,83 @@ const Borrow = () => {
       <div className="form-submit">
         <h3 className="form-stats-for-submit">{checkStats}</h3>
         <div className="form-inputs">
-          <input
-            name="borrowerName"
-            placeholder="Borrower Name"
-            required
-            type="text"
-            value={borrow.borrowerName}
-            onChange={handleChange}
-          />
+          {showUpdateReturnDate && (
+            <div>
+              <label>
+                Return Date
+                <input
+                  value={updateBorrow.returnDate}
+                  name="returnDate"
+                  onChange={handleChange}
+                  type="date"
+                />
+              </label>
+            </div>
+          )}
 
-          <input
-            name="borrowingDate"
-            placeholder="Borrower Date"
-            required
-            type="date"
-            value={borrow.borrowingDate}
-            onChange={handleChange}
-          />
+          {hiddenOtherInputs && (
+            <>
+              <input
+                name="borrowerName"
+                placeholder="Borrower Name"
+                required
+                type="text"
+                value={borrow.borrowerName}
+                onChange={handleChange}
+              />
 
-          <input
-            name="borrowerMail"
-            placeholder="Borrower Mail"
-            required
-            type="email"
-            value={borrow.borrowerMail}
-            onChange={handleChange}
-          />
-          <select
-            name="bookForBorrowingRequest"
-            onChange={(e) =>
-              setBorrow({
-                ...borrow,
-                bookForBorrowingRequest: { id: e.target.value },
-              })
-            }
-          >
-            <option value={0} disabled selected>
-              Select Book
-            </option>
-            {book?.map((e) => {
-              return (
-                <>
-                  <option value={e.id}>{e.name}</option>
-                </>
-              );
-            })}
-          </select>
+              <input
+                name="borrowingDate"
+                placeholder="Borrower Date"
+                required
+                type="date"
+                value={borrow.borrowingDate}
+                onChange={handleChange}
+              />
+
+              {hiddenSelectedBook && (
+                <input
+                  name="borrowerMail"
+                  placeholder="Borrower Mail"
+                  required
+                  type="email"
+                  value={borrow.borrowerMail}
+                  onChange={handleChange}
+                />
+              )}
+              {hiddenSelectedBook && (
+                <select
+                  name="bookForBorrowingRequest"
+                  onChange={(e) =>
+                    setBorrow({
+                      ...borrow,
+                      bookForBorrowingRequest: { id: e.target.value },
+                    })
+                  }
+                  value={selectedDefaultValue}
+                >
+                  <option value={0} disabled selected>
+                    Select Book
+                  </option>
+
+                  {/* Stok 0 dan fazla olanları getirir */}
+                  {book
+                    ?.filter((e) => e.stock > 0)
+                    .map((e) => {
+                      return (
+                        <option key={e.id} value={e.id}>
+                          {e.name}
+                        </option>
+                      );
+                    })}
+                </select>
+              )}
+            </>
+          )}
         </div>
         {createButtonVisible && (
-          <button className="form-submit-btn" onClick={handleSaveBook}>
-            Create Book
+          <button className="form-submit-btn" onClick={handleSaveBorrower}>
+            Create Borrower
           </button>
         )}
 
@@ -320,7 +339,7 @@ const Borrow = () => {
               })}
           </div>
         )}
-        <button onClick={handleShowBook} className="show-form-btn">
+        <button onClick={handleShowBorrower} className="show-form-btn">
           {showBorrowBtnName}
         </button>
       </div>
@@ -334,9 +353,13 @@ const Borrow = () => {
                   <h3>Mail: {borrow.borrowerMail}</h3>
                   <h3>Borrow Date: {borrow.borrowingDate}</h3>
                   <h3>Book: {borrow.book.name}</h3>
+                  <h3>
+                    Return Date :{" "}
+                    {borrow.returnDate ? borrow.returnDate : "Not brought"}
+                  </h3>
                   <button
                     onClick={(e) => {
-                      handleDeleteBook(borrow.id);
+                      handleDeleteBorrower(borrow.id);
                     }}
                     className="delete-form-btn"
                   >
@@ -344,19 +367,35 @@ const Borrow = () => {
                   </button>
                   <button
                     onClick={(e) => {
-                      handleUpdateBook(
+                      setShowUpdateReturnDate(true);
+                      setHiddenOtherInputs(false);
+                      handleUpdateBorrower(
                         borrow.id,
-                        borrow.name,
-                        borrow.publicationYear,
-                        borrow.stock,
-                        borrow.author.id,
-                        borrow.publisher.id,
-                        borrow.categories.map((c) => c.id)
+                        borrow.borrowerName,
+                        borrow.borrowingDate,
+                        borrow.returnDate
                       );
                     }}
                     className="update-form-btn"
                   >
-                    Update
+                    Update For Return Date
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      setShowUpdateReturnDate(false);
+                      setHiddenOtherInputs(true);
+                      setHiddenSelectedBook(false);
+                      handleUpdateBorrower(
+                        borrow.id,
+                        borrow.borrowerName,
+                        borrow.borrowingDate,
+                        borrow.returnDate
+                      );
+                    }}
+                    className="update-form-btn"
+                  >
+                    Update Borrower
                   </button>
                 </div>
               </>

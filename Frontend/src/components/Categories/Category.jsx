@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import categoryBaseUrl from "../../api/categoryApi";
+import validateFields from "../../common/util/checkField";
+
 const Category = () => {
   // State başı
   const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
@@ -55,25 +57,17 @@ const Category = () => {
   };
 
   const handleUpdateSaveClick = () => {
-    // Boş  veya tanımlanmamış fieldlar için
-    if (
-      category.name === "" ||
-      category.name === undefined ||
-      category.description === "" ||
-      category.description === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
+    const errors = validateFields(category);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
     } else {
       axios
-        .put(c.baseUrl + "/" + updateCategory.id, updateCategory)
+        .put(categoryBaseUrl.baseUrl + "/" + updateCategory.id, updateCategory)
         .then((res) => {
           setErrorFlag(false);
           setCategoryListChange(true);
@@ -105,22 +99,14 @@ const Category = () => {
 
   // Yazar kaydı isteği
   const handleSaveCategory = () => {
-    // Boş  veya tanımlanmamış fieldlar için
-    if (
-      category.name === "" ||
-      category.name === undefined ||
-      category.description === "" ||
-      category.description === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
+    const errors = validateFields(category);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
     } else {
       axios
         .post(categoryBaseUrl.baseUrl, category)

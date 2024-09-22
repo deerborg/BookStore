@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import categoryBaseUrl from "../../api/categoryApi";
 import publisherBaseUrl from "../../api/publisherApi";
-import bookBaseUrl from "../../api/bookApi";
-import authorBaseUrl from "../../api/authorApi";
-import borrowBaseUrl from "../../api/borrowApi";
+import validateFields from "../../common/util/checkField";
+
 const Publisher = () => {
   // State başı
   const [error, setError] = useState([]);
@@ -62,24 +60,14 @@ const Publisher = () => {
   };
 
   const handleUpdateSaveClick = () => {
-    // Boş  veya tanımlanmamış fieldlar için
-    if (
-      publisher.name === "" ||
-      publisher.name === undefined ||
-      publisher.establishmentYear === "" ||
-      publisher.establishmentYear === undefined ||
-      publisher.address === "" ||
-      publisher.address === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
+    const errors = validateFields(publisher);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
     } else {
       axios
         .put(
@@ -117,24 +105,14 @@ const Publisher = () => {
   };
 
   const handleSavePublisher = () => {
-    // Boş  veya tanımlanmamış fieldlar için
-    if (
-      publisher.name === "" ||
-      publisher.name === undefined ||
-      publisher.establishmentYear === "" ||
-      publisher.establishmentYear === undefined ||
-      publisher.address === "" ||
-      publisher.address === undefined
-    ) {
-      const emptyFieldErros = ["Empty Field"];
-      const clearMsg = () =>
-        setTimeout(() => {
-          const clearError = []; // Dizi uzunluğu divin silinmesi için 1 den küçük olmalı
-          setError(clearError);
-          setErrorFlag(false);
-        }, 2000);
-      setError(emptyFieldErros);
-      clearMsg();
+    const errors = validateFields(publisher);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
     } else {
       axios
         .post(publisherBaseUrl.baseUrl, publisher)

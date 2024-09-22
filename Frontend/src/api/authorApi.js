@@ -1,4 +1,4 @@
 const authorBaseUrl = {
-  baseUrl: "http://localhost:8080/api/v1/authors",
+  baseUrl: import.meta.env.VITE_LIBRARY_APP_BASE_URL + "/api/v1/authors",
 };
 export default authorBaseUrl;
