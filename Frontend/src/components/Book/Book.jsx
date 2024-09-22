@@ -345,7 +345,7 @@ const Book = () => {
               }}
             >
               <option className="option" value={0} disabled>
-                Mouse ile basılı tutup çoklu seçebilirsiniz
+                Press and hold the mouse to select multiple items.
               </option>
               {category.map((cat) => (
                 <option key={cat.id} value={cat.id}>
