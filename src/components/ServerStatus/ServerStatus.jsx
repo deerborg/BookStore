@@ -12,7 +12,7 @@ const ServerStatus = () => {
       await axios.get(authorBaseUrl.baseUrl);
       setIsServerOnline(true);
 
-      setStatus(""); // Sunucu açıldığında metni temizle
+      setStatus("");
     } catch (error) {
       setIsServerOnline(false);
       setStatus(
@@ -22,13 +22,10 @@ const ServerStatus = () => {
   };
 
   useEffect(() => {
-    // İlk yüklemede ve belirli aralıklarla sunucu durumunu kontrol et
-    const intervalId = setInterval(checkServerStatus, 5000); // 5 saniyede bir kontrol et
+    const intervalId = setInterval(checkServerStatus, 5000);
 
-    // İlk kontrol
     checkServerStatus();
 
-    // Bileşen unmount olduğunda zamanlayıcıyı temizle
     return () => clearInterval(intervalId);
   }, []);
 
@@ -38,6 +35,7 @@ const ServerStatus = () => {
         <div className="server-status-container">
           <div className="server-status-card">
             <h1>{status}</h1>
+            <div class="loader"></div>
             <h2>Trying to wake up ..</h2>
           </div>
         </div>
