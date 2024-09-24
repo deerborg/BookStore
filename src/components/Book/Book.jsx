@@ -7,6 +7,8 @@ import authorBaseUrl from "../../api/authorApi";
 import validateFields from "../../common/util/checkField";
 
 const Book = () => {
+  const [preventSpamReuqest, setPreventSpamRequest] = useState(false);
+  const [loadServer, setLoadServer] = useState(false);
   const [error, setError] = useState([]);
   const [errorMsg, setErrorMsg] = useState([]);
   const [errorFlag, setErrorFlag] = useState(false);
@@ -106,6 +108,8 @@ const Book = () => {
         setErrorFlag(false);
       }, 2000);
     } else {
+      setPreventSpamRequest(true);
+      setLoadServer(true);
       axios
         .put(bookBaseUrl.baseUrl + "/" + updateBook.id, book)
         .then((res) => {
@@ -126,6 +130,8 @@ const Book = () => {
               setCheked();
             }, 2000);
           }
+          setPreventSpamRequest(false);
+          setLoadServer(false);
           clearStats();
         })
         .catch((e) => {
@@ -133,8 +139,12 @@ const Book = () => {
           if (e.code === "ERR_NETWORK") {
             const err = ["Server Down"];
             setError(err);
+            setPreventSpamRequest(false);
+            setLoadServer(false);
           } else {
             setError(["Bad Request"]);
+            setPreventSpamRequest(false);
+            setLoadServer(false);
           }
         })
         .finally(setBookListChange(false))
@@ -152,6 +162,8 @@ const Book = () => {
         setErrorFlag(false);
       }, 2000);
     } else {
+      setPreventSpamRequest(true);
+      setLoadServer(true);
       axios
         .post(bookBaseUrl.baseUrl, book)
         .then((res) => {
@@ -174,16 +186,21 @@ const Book = () => {
               setCheked();
             }, 2000);
           }
+          setPreventSpamRequest(false);
+          setLoadServer(false);
           clearStats();
         })
         .catch((e) => {
           if (e.code === "ERR_NETWORK") {
             const err = ["Server Down"];
             setError(err);
+            setPreventSpamRequest(false);
+            setLoadServer(false);
           } else {
             const err = ["Bad Request. Contact a developer."];
             setError(err);
-            console.log(e);
+            setPreventSpamRequest(false);
+            setLoadServer(false);
           }
         })
         .finally(setBookListChange(false))
@@ -215,7 +232,8 @@ const Book = () => {
   };
 
   const handleDeleteBook = (id) => {
-    console.log(id);
+    setPreventSpamRequest(true);
+    setLoadServer(true);
     axios
       .delete(bookBaseUrl.baseUrl + "/" + id)
       .then((res) => {
@@ -226,10 +244,13 @@ const Book = () => {
             setCheckStats("");
           }, 2000);
         }
+        setPreventSpamRequest(false);
+        setLoadServer(false);
         clearStats();
       })
       .catch((e) => {
-        console.log(e);
+        setPreventSpamRequest(false);
+        setLoadServer(false);
       })
       .finally(setBookListChange(false));
   };
@@ -355,8 +376,19 @@ const Book = () => {
             </select>
           </div>
         </div>
+
+        {loadServer && (
+          <div className="load-container">
+            <div class="loader"></div>
+          </div>
+        )}
+
         {createButtonVisible && (
-          <button className="form-submit-btn" onClick={handleSaveBook}>
+          <button
+            disabled={preventSpamReuqest}
+            className="form-submit-btn"
+            onClick={handleSaveBook}
+          >
             Create Book
           </button>
         )}
@@ -365,6 +397,7 @@ const Book = () => {
           <>
             <div className="form-update-btns">
               <button
+                disabled={preventSpamReuqest}
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
@@ -411,6 +444,7 @@ const Book = () => {
                       : "No Categories"}
                   </h3>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleDeleteBook(books.id);
                     }}
@@ -419,6 +453,7 @@ const Book = () => {
                     Delete
                   </button>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleUpdateBook(
                         books.id,

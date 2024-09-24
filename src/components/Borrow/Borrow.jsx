@@ -10,6 +10,8 @@ import postRequest from "../../common/request/postRequest";
 import resetFormField from "../../common/util/resetFormField";
 
 const Borrow = () => {
+  const [preventSpamReuqest, setPreventSpamRequest] = useState(false);
+  const [loadServer, setLoadServer] = useState(false);
   const [error, setError] = useState([]);
   const [errorMsg, setErrorMsg] = useState([]);
   const [errorFlag, setErrorFlag] = useState(false);
@@ -94,7 +96,9 @@ const Borrow = () => {
               setBorrowListChange,
               setErrorFlag,
               setCheckStats,
-              setError
+              setError,
+              setLoadServer,
+              setPreventSpamRequest
             );
             setBorrow({
               borrowerName: "",
@@ -120,7 +124,9 @@ const Borrow = () => {
         setBorrowListChange,
         setErrorFlag,
         setCheckStats,
-        setError
+        setError,
+        setLoadServer,
+        setPreventSpamRequest
       );
       setBorrow({
         borrowerName: "",
@@ -162,7 +168,9 @@ const Borrow = () => {
       setBorrowListChange,
       setErrorFlag,
       setCheckStats,
-      setError
+      setError,
+      setLoadServer,
+      setPreventSpamRequest
     );
   };
 
@@ -290,7 +298,6 @@ const Borrow = () => {
                     Select Book
                   </option>
 
-                  {/* Stok 0 dan fazla olanları getirir */}
                   {book
                     ?.filter((e) => e.stock > 0)
                     .map((e) => {
@@ -305,8 +312,18 @@ const Borrow = () => {
             </>
           )}
         </div>
+        {loadServer && (
+          <div className="load-container">
+            <div class="loader"></div>
+          </div>
+        )}
+
         {createButtonVisible && (
-          <button className="form-submit-btn" onClick={handleSaveBorrower}>
+          <button
+            disabled={preventSpamReuqest}
+            className="form-submit-btn"
+            onClick={handleSaveBorrower}
+          >
             Create Borrower
           </button>
         )}
@@ -315,6 +332,7 @@ const Borrow = () => {
           <>
             <div className="form-update-btns">
               <button
+                disabled={preventSpamReuqest}
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
@@ -358,6 +376,7 @@ const Borrow = () => {
                     {borrow.returnDate ? borrow.returnDate : "Not brought"}
                   </h3>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleDeleteBorrower(borrow.id);
                     }}
@@ -366,6 +385,7 @@ const Borrow = () => {
                     Delete
                   </button>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       setShowUpdateReturnDate(true);
                       setHiddenOtherInputs(false);
@@ -382,6 +402,7 @@ const Borrow = () => {
                   </button>
 
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       setShowUpdateReturnDate(false);
                       setHiddenOtherInputs(true);

@@ -4,7 +4,8 @@ import publisherBaseUrl from "../../api/publisherApi";
 import validateFields from "../../common/util/checkField";
 
 const Publisher = () => {
-  // State başı
+  const [preventSpamReuqest, setPreventSpamRequest] = useState(false);
+  const [loadServer, setLoadServer] = useState(false);
   const [error, setError] = useState([]);
   const [errorMsg, setErrorMsg] = useState([]);
   const [errorFlag, setErrorFlag] = useState(false);
@@ -27,16 +28,14 @@ const Publisher = () => {
   const [checkStats, setCheckStats] = useState("");
   const [createButtonVisible, setCreateButtonVisible] = useState(true);
   const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
-  // State sonu
 
-  // Kayıt için standart şablon
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPublisher({
       ...publisher,
       [name]: value,
     });
-    // Update içinde gerekli standart şablon
+
     setUpdatePublisher({
       ...updatePublisher,
       [name]: value,
@@ -52,10 +51,10 @@ const Publisher = () => {
       address: address,
     };
 
-    setPublisher(updatePublisher); // Formu doldurmak için
+    setPublisher(updatePublisher);
     setUpdatePublisher({
       id: id,
-      ...updatePublisher, // Update işlemi için
+      ...updatePublisher,
     });
   };
 
@@ -69,6 +68,8 @@ const Publisher = () => {
         setErrorFlag(false);
       }, 2000);
     } else {
+      setPreventSpamRequest(true);
+      setLoadServer(true);
       axios
         .put(
           publisherBaseUrl.baseUrl + "/" + updatePublisher.id,
@@ -88,15 +89,20 @@ const Publisher = () => {
               setCheckStats("");
             }, 2000);
           }
+          setPreventSpamRequest(false);
+          setLoadServer(false);
           clearStats();
         })
         .catch((e) => {
           console.log(e);
           if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
+            setPreventSpamRequest(false);
+            setLoadServer(false);
             const err = ["Server Down"];
             setError(err);
           } else {
+            setPreventSpamRequest(false);
+            setLoadServer(false);
             setError(["Bad Request"]);
           }
         })
@@ -114,6 +120,8 @@ const Publisher = () => {
         setErrorFlag(false);
       }, 2000);
     } else {
+      setPreventSpamRequest(true);
+      setLoadServer(true);
       axios
         .post(publisherBaseUrl.baseUrl, publisher)
         .then((res) => {
@@ -130,11 +138,12 @@ const Publisher = () => {
               setCheckStats("");
             }, 2000);
           }
+          setPreventSpamRequest(false);
+          setLoadServer(false);
           clearStats();
         })
         .catch((e) => {
           if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
             const err = ["Server Down"];
             setError(err);
           } else {
@@ -147,7 +156,6 @@ const Publisher = () => {
     }
   };
 
-  // Backendden gelen exceptionları diziye aktarma
   useEffect(() => {
     if (error.length > 0) {
       setErrorMsg(error);
@@ -155,7 +163,6 @@ const Publisher = () => {
     }
   }, [error]);
 
-  // Aktif listenin kayıt ve silme isteklerinden sonra yenilenmesi için
   useEffect(() => {
     axios.get(publisherBaseUrl.baseUrl).then((res) => {
       setPublishers(res.data);
@@ -171,8 +178,9 @@ const Publisher = () => {
     return setShowPublishers(true);
   };
 
-  // Yazar silme isteği
   const handleDeletePublisher = (id) => {
+    setPreventSpamRequest(true);
+    setLoadServer(true);
     console.log(id);
     axios
       .delete(publisherBaseUrl.baseUrl + "/" + id)
@@ -184,6 +192,8 @@ const Publisher = () => {
             setCheckStats("");
           }, 2000);
         }
+        setPreventSpamRequest(false);
+        setLoadServer(false);
         clearStats();
       })
       .catch((e) => {
@@ -236,8 +246,18 @@ const Publisher = () => {
             onChange={handleChange}
           />
         </div>
+
+        {loadServer && (
+          <div className="load-container">
+            <div class="loader"></div>
+          </div>
+        )}
         {createButtonVisible && (
-          <button className="form-submit-btn" onClick={handleSavePublisher}>
+          <button
+            disabled={preventSpamReuqest}
+            className="form-submit-btn"
+            onClick={handleSavePublisher}
+          >
             Create Publisher
           </button>
         )}
@@ -246,6 +266,7 @@ const Publisher = () => {
           <>
             <div className="form-update-btns">
               <button
+                disabled={preventSpamReuqest}
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
@@ -286,6 +307,7 @@ const Publisher = () => {
                   </h3>
                   <h3>Publisher Address: {publisher.address}</h3>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleDeletePublisher(publisher.id);
                     }}
@@ -294,6 +316,7 @@ const Publisher = () => {
                     Delete
                   </button>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleUpdatePublisher(
                         publisher.id,

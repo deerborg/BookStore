@@ -8,6 +8,8 @@ import deleteRequest from "../../common/request/deleteRequest";
 import resetFormField from "../../common/util/resetFormField";
 
 const Auhtor = () => {
+  const [preventSpamReuqest, setPreventSpamRequest] = useState(false);
+  const [loadServer, setLoadServer] = useState(false);
   const [error, setError] = useState([]);
   const [errorMsg, setErrorMsg] = useState([]);
   const [errorFlag, setErrorFlag] = useState(false);
@@ -67,7 +69,9 @@ const Auhtor = () => {
         setAuthorListChange,
         setErrorFlag,
         setCheckStats,
-        setError
+        setError,
+        setLoadServer,
+        setPreventSpamRequest
       );
     } else if (method === "PUT") {
       putRequest(
@@ -78,7 +82,9 @@ const Auhtor = () => {
         setAuthorListChange,
         setErrorFlag,
         setCheckStats,
-        setError
+        setError,
+        setLoadServer,
+        setPreventSpamRequest
       );
     }
   };
@@ -105,7 +111,9 @@ const Auhtor = () => {
       setAuthorListChange,
       setErrorFlag,
       setCheckStats,
-      setError
+      setError,
+      setLoadServer,
+      setPreventSpamRequest
     );
   };
 
@@ -179,8 +187,17 @@ const Auhtor = () => {
             onChange={handleChange}
           />
         </div>
+        {loadServer && (
+          <div className="load-container">
+            <div class="loader"></div>
+          </div>
+        )}
         {createButtonVisible && (
-          <button className="author-submit-btn" onClick={handleSaveAuthor}>
+          <button
+            disabled={preventSpamReuqest}
+            className="author-submit-btn"
+            onClick={handleSaveAuthor}
+          >
             Create Author
           </button>
         )}
@@ -189,6 +206,7 @@ const Auhtor = () => {
           <>
             <div className="author-update-btns">
               <button
+                disabled={preventSpamReuqest}
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
@@ -231,6 +249,7 @@ const Auhtor = () => {
                       handleDeleteAuthor(auhtor.id);
                     }}
                     className="delete-auhtor-btn"
+                    disabled={preventSpamReuqest}
                   >
                     Delete
                   </button>
@@ -243,6 +262,7 @@ const Auhtor = () => {
                         auhtor.country
                       );
                     }}
+                    disabled={preventSpamReuqest}
                     className="update-author-btn"
                   >
                     Update

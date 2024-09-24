@@ -4,37 +4,36 @@ import categoryBaseUrl from "../../api/categoryApi";
 import validateFields from "../../common/util/checkField";
 
 const Category = () => {
-  // State başı
-  const [error, setError] = useState([]); // Valid sonrası oluşan excepitonlar listesi
-  const [errorMsg, setErrorMsg] = useState([]); // Mesajların listeye dahili
-  const [errorFlag, setErrorFlag] = useState(false); // Hata durumu kontrolü
+  const [preventSpamReuqest, setPreventSpamRequest] = useState(false);
+  const [loadServer, setLoadServer] = useState(false);
+  const [error, setError] = useState([]);
+  const [errorMsg, setErrorMsg] = useState([]);
+  const [errorFlag, setErrorFlag] = useState(false);
   const [category, setCategory] = useState({
     name: "",
     description: "",
-  }); // Kayıt için field
+  });
   const [updateCategory, setUpdateCategory] = useState({
     id: "",
     name: "",
     description: "",
-  }); // Güncelleme için filed
-  const [categories, setCategories] = useState([]); // YAzar listesi
-  const [categoryListChange, setCategoryListChange] = useState(false); // Yazar listesi güncellenme kontrolü
-  const [showCategories, setShowCategories] = useState(false); // Yazar listesi gizle göster
+  });
+  const [categories, setCategories] = useState([]);
+  const [categoryListChange, setCategoryListChange] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const [showCategoryBtnName, setShowCategoryBtnName] =
-    useState("Show All Category"); // Yazar listesi duruma göre isim değişimi
-  const [checkStats, setCheckStats] = useState(""); // Başarılı işlemler için
-  const [createButtonVisible, setCreateButtonVisible] = useState(true); // Güncelleme işlemlerinde Yeni yazar oluştur butonunu gizler
-  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false); // Güncelleme işlemleri için İptal ve Kaydet butonlarını aktif eder
-  // State sonu
+    useState("Show All Category");
+  const [checkStats, setCheckStats] = useState("");
+  const [createButtonVisible, setCreateButtonVisible] = useState(true);
+  const [updateButtonsVisible, setUpdateButtonsVisible] = useState(false);
 
-  // Kayıt için standart şablon
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCategory({
       ...category,
       [name]: value,
     });
-    // Update içinde gerekli standart şablon
+
     setUpdateCategory({
       ...updateCategory,
       [name]: value,
@@ -49,55 +48,13 @@ const Category = () => {
       description: description,
     };
 
-    setCategory(updateCategory); // Formu doldurmak için
+    setCategory(updateCategory);
     setUpdateCategory({
       id: id,
-      ...updateCategory, // Update işlemi için
+      ...updateCategory,
     });
   };
 
-  const handleUpdateSaveClick = () => {
-    const errors = validateFields(category);
-    if (errors) {
-      setError(errors);
-      setErrorFlag(true);
-      setTimeout(() => {
-        setError([]);
-        setErrorFlag(false);
-      }, 2000);
-    } else {
-      axios
-        .put(categoryBaseUrl.baseUrl + "/" + updateCategory.id, updateCategory)
-        .then((res) => {
-          setErrorFlag(false);
-          setCategoryListChange(true);
-          setCategory({
-            name: "",
-            description: "",
-          });
-          setCheckStats("Updated");
-          function clearStats() {
-            setTimeout(() => {
-              setCheckStats("");
-            }, 2000);
-          }
-          clearStats();
-        })
-        .catch((e) => {
-          console.log(e);
-          if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
-            const err = ["Server Down"];
-            setError(err);
-          } else {
-            setError(["Bad Request"]);
-          }
-        })
-        .finally(setCategoryListChange(false));
-    }
-  };
-
-  // Yazar kaydı isteği
   const handleSaveCategory = () => {
     const errors = validateFields(category);
     if (errors) {
@@ -108,6 +65,8 @@ const Category = () => {
         setErrorFlag(false);
       }, 2000);
     } else {
+      setPreventSpamRequest(true);
+      setLoadServer(true);
       axios
         .post(categoryBaseUrl.baseUrl, category)
         .then((res) => {
@@ -123,14 +82,19 @@ const Category = () => {
               setCheckStats("");
             }, 2000);
           }
+          setPreventSpamRequest(false);
+          setLoadServer(false);
           clearStats();
         })
         .catch((e) => {
           if (e.code === "ERR_NETWORK") {
-            // Sunucu bağlantısı kopar ise
+            setPreventSpamRequest(false);
+            setLoadServer(false);
             const err = ["Server Down"];
             setError(err);
           } else {
+            setPreventSpamRequest(false);
+            setLoadServer(false);
             const err = ["Bad Request. Contact a developer."];
             setError(err);
             console.log(e);
@@ -140,7 +104,54 @@ const Category = () => {
     }
   };
 
-  // Backendden gelen exceptionları diziye aktarma
+  const handleUpdateSaveClick = () => {
+    const errors = validateFields(category);
+    if (errors) {
+      setError(errors);
+      setErrorFlag(true);
+      setTimeout(() => {
+        setError([]);
+        setErrorFlag(false);
+      }, 2000);
+    } else {
+      setPreventSpamRequest(true);
+      setLoadServer(true);
+      axios
+        .put(categoryBaseUrl.baseUrl + "/" + updateCategory.id, updateCategory)
+        .then((res) => {
+          setErrorFlag(false);
+          setCategoryListChange(true);
+          setCategory({
+            name: "",
+            description: "",
+          });
+          setCheckStats("Updated");
+          function clearStats() {
+            setTimeout(() => {
+              setCheckStats("");
+            }, 2000);
+          }
+          setPreventSpamRequest(false);
+          setLoadServer(false);
+          clearStats();
+        })
+        .catch((e) => {
+          console.log(e);
+          if (e.code === "ERR_NETWORK") {
+            setPreventSpamRequest(false);
+            setLoadServer(false);
+            const err = ["Server Down"];
+            setError(err);
+          } else {
+            setPreventSpamRequest(false);
+            setLoadServer(false);
+            setError(["Bad Request"]);
+          }
+        })
+        .finally(setCategoryListChange(false));
+    }
+  };
+
   useEffect(() => {
     if (error.length > 0) {
       setErrorMsg(error);
@@ -148,14 +159,12 @@ const Category = () => {
     }
   }, [error]);
 
-  // Aktif listenin kayıt ve silme isteklerinden sonra yenilenmesi için
   useEffect(() => {
     axios.get(categoryBaseUrl.baseUrl).then((res) => {
       setCategories(res.data);
     });
   }, [categoryListChange]);
 
-  // Yazarları listeleme butonu için
   const handleShowCategory = () => {
     if (showCategories) {
       setShowCategoryBtnName("Show All Category");
@@ -165,9 +174,9 @@ const Category = () => {
     return setShowCategories(true);
   };
 
-  // Yazar silme isteği
   const handleDeleteCategory = (id) => {
-    console.log(id);
+    setPreventSpamRequest(true);
+    setLoadServer(true);
     axios
       .delete(categoryBaseUrl.baseUrl + "/" + id)
       .then((res) => {
@@ -178,6 +187,8 @@ const Category = () => {
             setCheckStats("");
           }, 2000);
         }
+        setPreventSpamRequest(false);
+        setLoadServer(false);
         clearStats();
       })
       .catch((e) => {
@@ -218,8 +229,19 @@ const Category = () => {
             onChange={handleChange}
           />
         </div>
+
+        {loadServer && (
+          <div className="load-container">
+            <div class="loader"></div>
+          </div>
+        )}
+
         {createButtonVisible && (
-          <button className="form-submit-btn" onClick={handleSaveCategory}>
+          <button
+            disabled={preventSpamReuqest}
+            className="form-submit-btn"
+            onClick={handleSaveCategory}
+          >
             Create Category
           </button>
         )}
@@ -228,6 +250,7 @@ const Category = () => {
           <>
             <div className="form-update-btns">
               <button
+                disabled={preventSpamReuqest}
                 onClick={handleUpdateSaveClick}
                 className="author-submit-btn"
               >
@@ -265,6 +288,7 @@ const Category = () => {
                   <h3>Category Name: {category.name}</h3>
                   <h3>Category Description: {category.description}</h3>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleDeleteCategory(category.id);
                     }}
@@ -273,6 +297,7 @@ const Category = () => {
                     Delete
                   </button>
                   <button
+                    disabled={preventSpamReuqest}
                     onClick={(e) => {
                       handleUpdateCategory(
                         category.id,

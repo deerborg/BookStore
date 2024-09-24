@@ -8,15 +8,21 @@ const putRequest = (
   setListChange,
   setErrorFlag,
   setCheckStats,
-  setError // Yeni parametre
+  setError,
+  setLoad,
+  setBtnFlag
 ) => {
+  setBtnFlag(true);
+  setLoad(true);
   axios
     .put(url + "/" + requestId, data)
     .then((res) => {
       setErrorFlag(false);
-      setListChange(true); // Listeyi güncelle
-      resetForm(); // Formu sıfırla
+      setListChange(true);
+      resetForm();
       setCheckStats("Updated");
+      setLoad(false);
+      setBtnFlag(false);
       setTimeout(() => {
         setCheckStats("");
       }, 2000);
@@ -24,12 +30,20 @@ const putRequest = (
     .catch((e) => {
       if (e.code === "ERR_NETWORK") {
         const err = ["Server Down"];
-        setError(err); // Hata mesajı güncelleme
+        setError(err);
+        setLoad(false);
+        setBtnFlag(false);
       } else {
         const err = ["Bad Request. Contact a developer."];
-        setError(err); // Hata mesajı güncelleme
+        setError(err);
+        setLoad(false);
+        setBtnFlag(false);
+        setTimeout(() => {
+          const err = [""];
+          setError(err);
+        }, 2000);
       }
     })
-    .finally(setListChange(false)); // Liste güncelleme işlemini kapat
+    .finally(setListChange(false));
 };
 export default putRequest;
