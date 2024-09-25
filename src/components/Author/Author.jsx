@@ -7,7 +7,7 @@ import postRequest from "../../common/request/postRequest";
 import deleteRequest from "../../common/request/deleteRequest";
 import resetFormField from "../../common/util/resetFormField";
 
-const Auhtor = () => {
+const Author = () => {
   const [preventSpamReuqest, setPreventSpamRequest] = useState(false);
   const [loadServer, setLoadServer] = useState(false);
   const [error, setError] = useState([]);
@@ -276,4 +276,4 @@ const Auhtor = () => {
     </>
   );
 };
-export default Auhtor;
+export default Author;

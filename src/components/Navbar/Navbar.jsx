@@ -1,5 +1,5 @@
 import { BrowserRouter, Link, Route } from "react-router-dom";
-import Auhtor from "../Author/Author";
+import Author from "../Author/Author";
 
 const Navbar = () => {
   return (

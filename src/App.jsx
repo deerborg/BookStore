@@ -1,7 +1,7 @@
 import axios from "axios";
 import "./App.css";
 import { useEffect, useState } from "react";
-import Auhtor from "./components/Author/Author";
+import Author from "./components/Author/Author";
 import Navbar from "./components/Navbar/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home/Home";
@@ -19,16 +19,13 @@ function App() {
       <Router>
         <div className="general-container">
           <Navbar />
-          {/* Sayfa yönlendirme rotalarını burada tanımlıyoruz */}
           <Routes>
-            <Route path="/author" element={<Auhtor />} />
+            <Route path="/author" element={<Author />} />
             <Route path="/publisher" element={<Publisher />} />
             <Route path="/category" element={<Category />} />
             <Route path="/book" element={<Book />} />
             <Route path="/borrow" element={<Borrow />} />
-
             <Route path="/" element={<Home />} />
-            {/* İleride diğer sayfalar için buraya ek rotalar ekleyebilirsiniz */}
           </Routes>
           <Footer></Footer>
         </div>
